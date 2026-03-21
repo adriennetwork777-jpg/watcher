@@ -3,6 +3,7 @@
 #################################################
 ARG PYTHON_VERSION=3.11.14
 ARG DEBIAN_SUITE=bookworm
+ARG NODE_VERSION=18
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
@@ -10,22 +11,36 @@ ARG NO_PROXY
 #################################################
 #                FRONTEND BUILD                 #
 #################################################
-FROM node:18-bookworm-slim AS frontend-builder
+FROM node:${NODE_VERSION}-bookworm-slim AS frontend-builder
 
-WORKDIR /frontend
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
 
+ENV http_proxy=${HTTP_PROXY} \
+    https_proxy=${HTTPS_PROXY} \
+    no_proxy=${NO_PROXY}
+
+WORKDIR /build
+
+# Copy package files first for better caching
 COPY package*.json ./
+
+# Install dependencies
 RUN npm ci
 
-COPY . .
+# Copy frontend source code
+COPY Watcher/frontend/src ./Watcher/frontend/src
+COPY webpack.config.js ./
+COPY .babelrc ./
 
-# Install ReactJs dependencies
-RUN npm install
+# Build the frontend
+RUN npm run build
 
 #################################################
 #                BACKEND BUILD                  #
 #################################################
-FROM python:3.11-slim-bookworm AS backend-builder
+FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS backend-builder
 
 ENV http_proxy=${HTTP_PROXY} \
     https_proxy=${HTTPS_PROXY} \
@@ -109,8 +124,8 @@ COPY --from=backend-builder /usr/local/share/nltk_data /usr/local/share/nltk_dat
 # Copy application code
 COPY . .
 
-# Copy frontend build output
-COPY --from=frontend-builder /frontend/ /app/Watcher/static
+# Copy frontend build output from builder
+COPY --from=frontend-builder /build/Watcher/frontend/static /app/Watcher/static
 
 WORKDIR /app/Watcher
 
