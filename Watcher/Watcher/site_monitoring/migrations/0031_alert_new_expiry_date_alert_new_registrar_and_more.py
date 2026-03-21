@@ -13,51 +13,84 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='alert',
             name='new_expiry_date',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(
+                blank=True,
+                null=True),
         ),
         migrations.AddField(
             model_name='alert',
             name='new_registrar',
-            field=models.CharField(blank=True, max_length=255, null=True),
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                null=True),
         ),
         migrations.AddField(
             model_name='alert',
             name='old_expiry_date',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(
+                blank=True,
+                null=True),
         ),
         migrations.AddField(
             model_name='alert',
             name='old_registrar',
-            field=models.CharField(blank=True, max_length=255, null=True),
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                null=True),
         ),
         migrations.AddField(
             model_name='site',
             name='blocking_request',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(
+                default=False),
         ),
         migrations.AddField(
             model_name='site',
             name='domain_expiry',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(
+                blank=True,
+                null=True),
         ),
         migrations.AddField(
             model_name='site',
             name='legal_team',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(
+                default=False),
         ),
         migrations.AddField(
             model_name='site',
             name='legitimacy',
-            field=models.IntegerField(blank=True, choices=[(1, 'Unknown'), (2, 'Suspicious, not harmful'), (3, 'Suspicious, likely harmful (registered)'), (4, 'Suspicious, likely harmful (available/disabled)'), (5, 'Malicious (registered)'), (6, 'Malicious (available/disabled)')], null=True),
+            field=models.IntegerField(
+                blank=True,
+                choices=[
+                    (1,
+                     'Unknown'),
+                    (2,
+                     'Suspicious, not harmful'),
+                    (3,
+                     'Suspicious, likely harmful (registered)'),
+                    (4,
+                     'Suspicious, likely harmful (available/disabled)'),
+                    (5,
+                     'Malicious (registered)'),
+                    (6,
+                     'Malicious (available/disabled)')],
+                null=True),
         ),
         migrations.AddField(
             model_name='site',
             name='registrar',
-            field=models.CharField(blank=True, max_length=255, null=True),
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                null=True),
         ),
         migrations.AddField(
             model_name='site',
             name='takedown_request',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(
+                default=False),
         ),
     ]

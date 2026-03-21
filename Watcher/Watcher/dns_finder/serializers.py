@@ -19,7 +19,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class DnsMonitoredSerializer(serializers.ModelSerializer):
     def validate_domain_name(self, value):
         extracted = tldextract.extract(value)
-                
+
         if not extracted.domain or not extracted.suffix:
             raise serializers.ValidationError("The domain name is not valid")
 
@@ -30,20 +30,24 @@ class DnsMonitoredSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # KeywordMonitored Serializer
+
+
 class KeywordMonitoredSerializer(serializers.ModelSerializer):
     class Meta:
         model = KeywordMonitored
         fields = '__all__'
 
 # DnsTwisted Serializer
+
+
 class DnsTwistedSerializer(serializers.ModelSerializer):
     dns_monitored = DnsMonitoredSerializer(read_only=True)
     keyword_monitored = KeywordMonitoredSerializer(read_only=True)
     misp_event_uuid = serializers.SerializerMethodField()
-    
+
     def get_misp_event_uuid(self, obj):
         return get_misp_uuid(obj.domain_name)
-    
+
     class Meta:
         model = DnsTwisted
         fields = '__all__'
@@ -79,7 +83,7 @@ class MISPSerializer(serializers.Serializer):
         try:
             dns_id = data['id']
             event_uuid = data.get('event_uuid', '')
-            
+
             try:
                 dns_twisted = DnsTwisted.objects.get(pk=dns_id)
             except DnsTwisted.DoesNotExist:
@@ -98,7 +102,7 @@ class MISPSerializer(serializers.Serializer):
                     )
 
             return data
-            
+
         except Exception as e:
             raise serializers.ValidationError(f"Validation error: {str(e)}")
 
@@ -110,18 +114,18 @@ class MISPSerializer(serializers.Serializer):
             dns_id = self.validated_data['id']
             event_uuid = self.validated_data.get('event_uuid')
             dns_twisted = DnsTwisted.objects.get(pk=dns_id)
-            
+
             if event_uuid:
                 event = self.misp_api.get_event(event_uuid)
                 success, message = create_or_update_objects(
-                    self.misp_api, 
-                    event, 
+                    self.misp_api,
+                    event,
                     dns_twisted
                 )
-                
+
                 if success:
                     update_misp_uuid(dns_twisted.domain_name, event_uuid)
-                    
+
             else:
                 event = MISPEvent()
                 event.distribution = 0

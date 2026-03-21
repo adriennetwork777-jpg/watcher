@@ -19,6 +19,7 @@ from django.db.models import Q
 # Configure logger
 logger = logging.getLogger('watcher.dns_finder')
 
+
 def start_scheduler():
     """
     Launch multiple planning tasks in background:
@@ -54,29 +55,29 @@ def in_dns_monitored(domain):
 def is_legitimate_domain(domain):
     """
     Check if domain or its parent domain is in the Legitimate Domains list.
-    
+
     Example:
         - domain = "subdomain.thalesgroup.com"
         - If "thalesgroup.com" is in LegitimateDomain -> return True
         - If "subdomain.thalesgroup.com" is in LegitimateDomain -> return True
-    
+
     :param domain: Domain to check (Str).
     :rtype: bool
     """
     # Get all legitimate domains
     legitimate_domains = LegitimateDomain.objects.values_list('domain_name', flat=True)
-    
+
     # Check exact match
     if domain in legitimate_domains:
         logger.info(f"Domain {domain} is in Legitimate Domains (exact match)")
         return True
-    
+
     # Check if any legitimate domain is the parent of this domain
     for legit_domain in legitimate_domains:
         if domain.endswith('.' + legit_domain) or domain == legit_domain:
             logger.info(f"Domain {domain} is a subdomain of legitimate domain {legit_domain}")
             return True
-    
+
     return False
 
 
@@ -100,12 +101,12 @@ def print_callback(message, context):
     for keyword_monitored in KeywordMonitored.objects.all():
         if keyword_monitored.name in domain and not DnsTwisted.objects.filter(domain_name=domain) and \
                 not in_dns_monitored(domain):
-            
+
             # Check if domain is legitimate before creating alert
             if is_legitimate_domain(domain):
                 logger.info(f"Skipping alert for {domain} - domain is in Legitimate Domains")
                 continue
-            
+
             logger.info(f"Keyword {keyword_monitored.name} detected in: {domain}")
             dns_twisted = DnsTwisted.objects.create(domain_name=domain, keyword_monitored=keyword_monitored)
             alert = Alert.objects.create(dns_twisted=dns_twisted)
@@ -187,7 +188,7 @@ def check_dnstwist(dns_monitored):
                         if is_legitimate_domain(twisted_domain):
                             logger.info(f"Skipping alert for {twisted_domain} - domain is in Legitimate Domains")
                             continue
-                        
+
                         # If it is a new domain name, we create it
                         if not DnsTwisted.objects.filter(domain_name=twisted_website_dict['domain']):
                             dns_twisted = DnsTwisted.objects.create(domain_name=twisted_website_dict['domain'],
@@ -213,7 +214,7 @@ def check_dnstwist(dns_monitored):
 def send_dns_finder_notifications(alert):
     """
     Sends notifications to Slack, Citadel, TheHive or Email based on DNS Finder.
-    
+
     :param alert: Alert Object.
     """
     subscribers = Subscriber.objects.filter(
@@ -230,11 +231,11 @@ def send_dns_finder_notifications(alert):
 
     source = None
     if hasattr(alert, 'source'):
-        source = alert.source 
+        source = alert.source
 
     context_data = {
         'alert': alert,
-        'source': source 
+        'source': source
     }
 
     send_app_specific_notifications('dns_finder', context_data, subscribers)
@@ -267,7 +268,7 @@ def send_dns_finder_notifications_group(dns_monitored, alerts_number, alerts):
     for alert in alerts:
 
         context_data_thehive = {
-            'alert': alert,  
+            'alert': alert,
         }
 
         send_only_thehive_notifications('dns_finder', context_data_thehive, subscribers)

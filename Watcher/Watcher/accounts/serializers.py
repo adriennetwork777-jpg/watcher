@@ -46,5 +46,6 @@ class UserPasswordChangeSerializer(serializers.Serializer):
 
     @property
     def data(self):
-        # just return success dictionary. you can change this to your need, but i dont think output should be user data after password change
+        # just return success dictionary. you can change this to your need, but i
+        # dont think output should be user data after password change
         return {'Success': True}

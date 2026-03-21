@@ -59,11 +59,16 @@ def start_scheduler():
     scheduler.add_job(monitoring_check, 'cron', day_of_week='mon-sun', minute='*/15', id='weekend_job',
                       max_instances=10,
                       replace_existing=True)
-    
-    scheduler.add_job(update_site_monitoring_rdap_data, 'cron', day_of_week='mon-sun', minute='*/15', id='site_rdap_job',
-                      max_instances=1,
-                      replace_existing=True)
-    
+
+    scheduler.add_job(
+        update_site_monitoring_rdap_data,
+        'cron',
+        day_of_week='mon-sun',
+        minute='*/15',
+        id='site_rdap_job',
+        max_instances=1,
+        replace_existing=True)
+
     scheduler.start()
 
 
@@ -101,9 +106,9 @@ def create_rdap_alert(site, alert_code, registrar_data=None, expiry_data=None):
         rdap_alert_types = {
             17: {'type': message_registrar, 'new_registrar': None, 'old_registrar': None},
             18: {'type': message_expiry, 'new_expiry_date': None, 'old_expiry_date': None},
-            19: {'type': message_registrar_expiry, 'new_registrar': None, 'old_registrar': None, 
+            19: {'type': message_registrar_expiry, 'new_registrar': None, 'old_registrar': None,
                  'new_expiry_date': None, 'old_expiry_date': None},
-            20: {'type': message_rdap_update, 'new_registrar': None, 'old_registrar': None, 
+            20: {'type': message_rdap_update, 'new_registrar': None, 'old_registrar': None,
                  'new_expiry_date': None, 'old_expiry_date': None},
         }
 
@@ -150,7 +155,7 @@ def perform_site_rdap_lookup(site):
         # Try RDAP first
         rdap = RDAPDiscovery(site.domain_name)
         method = "RDAP"
-        
+
         if not rdap.fetch_rdap_data():
             # Fallback to WHOIS
             logger.info(f"RDAP lookup failed for domain {site.domain_name}, falling back to WHOIS")
@@ -158,13 +163,13 @@ def perform_site_rdap_lookup(site):
             if not whois.fetch_whois_data():
                 logger.warning(f"No RDAP/WHOIS data found for domain {site.domain_name}")
                 return False
-            
+
             rdap = whois
             method = "WHOIS"
 
         registrar = rdap.get_registrar()
         expiration_date = rdap.get_expiration_date()
-        
+
         if not registrar and not expiration_date:
             return False
 
@@ -172,7 +177,7 @@ def perform_site_rdap_lookup(site):
             'registrar': site.registrar,
             'expiry': site.domain_expiry
         }
-        
+
         new_data = {
             'registrar': registrar,
             'expiry': datetime.strptime(expiration_date, '%Y-%m-%d').date() if expiration_date else None
@@ -181,7 +186,7 @@ def perform_site_rdap_lookup(site):
         # Detect changes and create individual alerts
         registrar_changed = (registrar and site.registrar and site.registrar != registrar)
         expiry_changed = (new_data['expiry'] and site.domain_expiry and site.domain_expiry != new_data['expiry'])
-        
+
         if registrar_changed:
             create_rdap_alert(
                 site=site,
@@ -189,7 +194,7 @@ def perform_site_rdap_lookup(site):
                 registrar_data={'old': site.registrar, 'new': registrar}
             )
             logger.info(f"{method} Alert: Registrar change for {site.domain_name}")
-            
+
         if expiry_changed:
             create_rdap_alert(
                 site=site,
@@ -197,7 +202,7 @@ def perform_site_rdap_lookup(site):
                 expiry_data={'old': site.domain_expiry, 'new': new_data['expiry']}
             )
             logger.info(f"{method} Alert: Expiration change for {site.domain_name}")
-            
+
         if not site.registrar or not site.domain_expiry:
             create_rdap_alert(
                 site=site,
@@ -205,40 +210,40 @@ def perform_site_rdap_lookup(site):
                 registrar_data={'old': site.registrar, 'new': registrar} if registrar else None,
                 expiry_data={'old': site.domain_expiry, 'new': new_data['expiry']} if expiration_date else None
             )
-            logger.info(f"Successfully updated {method} data for {site.domain_name}: registrar='{registrar}', expiration='{expiration_date}'")
+            logger.info(
+                f"Successfully updated {method} data for {
+                    site.domain_name}: registrar='{registrar}', expiration='{expiration_date}'")
 
         # Update site data
         updated = False
         legitimacy_updated = False
         old_legitimacy = site.legitimacy
-        
+
         if registrar:
             site.registrar = registrar
             updated = True
-            
+
             legitimacy_updated = site.auto_update_legitimacy_on_registration()
-            
+
         if new_data['expiry']:
             site.domain_expiry = new_data['expiry']
             updated = True
 
         if updated:
             site.save()
-            
+
             # Create additional alert if legitimacy was auto-updated
             if legitimacy_updated:
                 old_legitimacy_label = LEGITIMACY_LABELS.get(old_legitimacy, f"Level {old_legitimacy}")
                 new_legitimacy_label = LEGITIMACY_LABELS.get(site.legitimacy, f"Level {site.legitimacy}")
-                
+
                 create_rdap_alert(
                     site=site,
                     alert_code=17,
                     registrar_data={
                         'old': f"{old_legitimacy_label}" if old_legitimacy else "Status auto-updated due to registration",
-                        'new': f"{new_legitimacy_label}"
-                    }
-                )
-            
+                        'new': f"{new_legitimacy_label}"})
+
             return True
 
         return False
@@ -256,7 +261,7 @@ def update_site_monitoring_rdap_data():
     logger.info("CRON TASK : RDAP/WHOIS Lookup for Site Monitoring")
 
     sites = Site.objects.all()
-    
+
     for site in sites:
         try:
             perform_site_rdap_lookup(site)
@@ -317,8 +322,7 @@ def check_content(site, alert, ua):
     """
     if not ua:
         headers = {
-            'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
-        }
+            'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"}
     else:
         try:
             headers = {
@@ -326,8 +330,7 @@ def check_content(site, alert, ua):
             }
         except Exception:
             headers = {
-                'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
-            }
+                'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"}
 
     score = 0
     try:
@@ -471,7 +474,7 @@ def check_mail(site, alert):
             if is_mx:
                 alert_mx = True
                 Site.objects.filter(pk=site.pk).update(MX_records=mx_records_list)
-    except(resolver.NoAnswer, resolver.NXDOMAIN, resolver.NoNameservers, DNSException):
+    except (resolver.NoAnswer, resolver.NXDOMAIN, resolver.NoNameservers, DNSException):
         if Site.objects.get(pk=site.pk).MX_records != []:
             Site.objects.filter(pk=site.pk).update(MX_records=[])
             alert_mx = True
@@ -482,8 +485,8 @@ def check_mail(site, alert):
                 site.mail_A_record_ip + "/16", strict=False):
             alert_a_ip = True
         Site.objects.filter(pk=site.pk).update(mail_A_record_ip=mail_ip)
-    except(resolver.NoAnswer, resolver.NXDOMAIN, resolver.NoNameservers, DNSException):
-        if Site.objects.get(pk=site.pk).mail_A_record_ip != None:
+    except (resolver.NoAnswer, resolver.NXDOMAIN, resolver.NoNameservers, DNSException):
+        if Site.objects.get(pk=site.pk).mail_A_record_ip is not None:
             Site.objects.filter(pk=site.pk).update(mail_A_record_ip=None)
             alert_a_ip = True
 
@@ -561,7 +564,6 @@ def create_alert(alert, site, new_ip, new_ip_second, score):
         16: {'type': message_mail_ip_web, 'old_MX_records': site.MX_records, 'old_mail_A_record_ip': site.mail_A_record_ip},
     }
 
-
     if site.monitored and alert != 0:
         alert_data = alert_types[alert]
 
@@ -573,7 +575,6 @@ def create_alert(alert, site, new_ip, new_ip_second, score):
         for previous_alert in last_two_alerts:
             if all(getattr(previous_alert, key) == value for key, value in alert_data.items()):
                 return
-
 
         alert_data.update({
             'new_ip': new_ip if new_ip else None,
@@ -609,15 +610,15 @@ def create_alert(alert, site, new_ip, new_ip_second, score):
             if 'Web' not in alert_data['type']:
                 if site.monitored and alert != 8:
                     Site.objects.filter(pk=site.pk).update(MX_records=site.MX_records,
-                                                            mail_A_record_ip=site.mail_A_record_ip)
-                    
+                                                           mail_A_record_ip=site.mail_A_record_ip)
+
         send_website_monitoring_notifications(site, alert_data)
 
 
 def send_website_monitoring_notifications(site, alert_data):
     """
     Sends notifications to Slack, Citadel, TheHive or Email based on Site Monitoring.
-    
+
     Args:
         site (Site): The object representing the site to monitor.
         alert_data (dict): The alert data associated with the site.
@@ -630,21 +631,25 @@ def send_website_monitoring_notifications(site, alert_data):
         logger.info("No subscribers for Site Monitoring, no message sent.")
         return
 
-
     ip_changes = f"New IP: {alert_data.get('new_ip', 'N/A')} | Old IP: {alert_data.get('old_ip', 'N/A')}"
-    ip_second_changes = f"New Second IP: {alert_data.get('new_ip_second', 'N/A')} | Old Second IP: {alert_data.get('old_ip_second', 'N/A')}"
-    mx_changes = f"MX Records: {', '.join(alert_data.get('new_mx_records', []))}" 
+    ip_second_changes = f"New Second IP: {
+        alert_data.get(
+            'new_ip_second',
+            'N/A')} | Old Second IP: {
+        alert_data.get(
+            'old_ip_second',
+            'N/A')}"
+    mx_changes = f"MX Records: {', '.join(alert_data.get('new_mx_records', []))}"
     content_score_info = f"TLSH Score: {alert_data.get('difference_score', 'N/A')}"
     alert_type_info = f"Alert Type: {alert_data.get('type', 'N/A')}"
 
-
-    required_keys = ['new_ip', 'old_ip', 'new_ip_second', 'old_ip_second', 'new_MX_records', 'old_MX_records', 'new_mail_A_record_ip', 'old_mail_A_record_ip']
+    required_keys = ['new_ip', 'old_ip', 'new_ip_second', 'old_ip_second',
+                     'new_MX_records', 'old_MX_records', 'new_mail_A_record_ip', 'old_mail_A_record_ip']
     for key in required_keys:
         if key not in alert_data:
-            alert_data[key] = 'None' 
+            alert_data[key] = 'None'
 
-
-    if alert_data['type'] == 'Web content change detected':  
+    if alert_data['type'] == 'Web content change detected':
         alert_data['new_ip'] = alert_data.get('new_ip')
         alert_data['old_ip'] = alert_data.get('old_ip')
         alert_data['new_ip_second'] = alert_data.get('new_ip_second')
@@ -653,7 +658,6 @@ def send_website_monitoring_notifications(site, alert_data):
         alert_data['old_MX_records'] = alert_data.get('old_MX_records')
         alert_data['new_mail_A_record_ip'] = alert_data.get('new_mail_A_record_ip')
         alert_data['old_mail_A_record_ip'] = alert_data.get('old_mail_A_record_ip')
-
 
     context_data = {
         'site': site,

@@ -8,6 +8,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 import logging
 
+
 class Source(models.Model):
     """
     Stores Source RSS Feed Url which will be used to find new words tendencies in **threats_watcher/apps.py** Algorithms.
@@ -41,8 +42,8 @@ class TrendyWord(models.Model):
     Related to severals :model:`threats_watcher.PostUrl`.
     """
     name = models.CharField(max_length=100)
-    occurrences = models.IntegerField(default=1,
-                                      help_text="Incremented by one when the same word is found in another post from RSS Feeds.")
+    occurrences = models.IntegerField(
+        default=1, help_text="Incremented by one when the same word is found in another post from RSS Feeds.")
     score = models.FloatField(default=0, help_text="Average confidence score from source (1=100%, 2=50%, 3=20%)")
     posturls = models.ManyToManyField(PostUrl)
     created_at = models.DateTimeField(default=timezone.now)
@@ -65,7 +66,7 @@ def cascade_delete_branch(sender, instance, **kwargs):
         type='trendy_word_summary',
         keywords=instance.name
     ).delete()
-    
+
     # Delete unused PostUrls
     for posturl in instance.posturls.all():
         # If posturl is associated to 1 or 0 trendyword, we can remove it
@@ -97,17 +98,17 @@ class Summary(models.Model):
         ('breaking_news', 'Breaking News'),
         ('trendy_word_summary', 'Trendy Word Summary'),
     )
-    
+
     type = models.CharField(max_length=30, choices=TYPE_CHOICES, default='weekly_summary')
     keywords = models.CharField(max_length=500, blank=True)
     summary_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name_plural = 'Summaries'
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"{self.get_type_display()} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
@@ -143,7 +144,8 @@ def auto_generate_trendy_word_summary(sender, instance, created, **kwargs):
 
     if created and instance.occurrences >= 3:
         should_generate = True
-        logger.info(f"New TrendyWord '{instance.name}' created with {instance.occurrences} occurrences - generating summary")
+        logger.info(
+            f"New TrendyWord '{instance.name}' created with {instance.occurrences} occurrences - generating summary")
     elif not created and instance.posturls.count() >= 5 and not existing_summary:
         should_generate = True
         logger.info(f"TrendyWord '{instance.name}' updated with {instance.posturls.count()} posts - generating summary")

@@ -36,6 +36,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='subscriber',
             name='user_rec',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='threats_watcher', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='threats_watcher', to=settings.AUTH_USER_MODEL),
         ),
     ]

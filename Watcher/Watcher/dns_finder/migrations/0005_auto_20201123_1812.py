@@ -12,7 +12,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='dnsmonitored',
-            options={'ordering': ['domain_name'], 'verbose_name': 'Corporate DNS', 'verbose_name_plural': 'Corporate DNS Assets Monitored'},
+            options={'ordering': ['domain_name'], 'verbose_name': 'Corporate DNS',
+                     'verbose_name_plural': 'Corporate DNS Assets Monitored'},
         ),
         migrations.AlterModelOptions(
             name='dnstwisted',

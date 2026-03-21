@@ -18,7 +18,7 @@ class KeywordViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = KeywordSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         return Keyword.objects.all().order_by('-created_at')
 
@@ -30,6 +30,6 @@ class AlertViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = AlertSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         return Alert.objects.select_related('keyword').order_by('-created_at')

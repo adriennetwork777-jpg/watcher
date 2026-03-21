@@ -42,7 +42,7 @@ def search_thehive_for_ticket_id(watcher_id, thehive_url, api_key, item_type=Non
             return item_type, results[0]
     except requests.exceptions.RequestException as e:
         logger.error(f"Error searching for {item_type} with {settings.THE_HIVE_CUSTOM_FIELD} {watcher_id}: {e}")
-    
+
     return None, None
 
 
@@ -59,10 +59,10 @@ def search_thehive_for_observable(observable_value, thehive_url, api_key):
 
     query = {
         "query": [
-            { "_name": "listObservable" },
-            { "_name": "filter", "_eq": { "_field": "data", "_value": observable_value } },
-            { "_name": "sort", "_fields": [ { "_createdAt": "desc" } ] },
-            { "_name": "page", "extraData": [ "links" ], "from": 0, "to": 10 }
+            {"_name": "listObservable"},
+            {"_name": "filter", "_eq": {"_field": "data", "_value": observable_value}},
+            {"_name": "sort", "_fields": [{"_createdAt": "desc"}]},
+            {"_name": "page", "extraData": ["links"], "from": 0, "to": 10}
         ]
     }
     url = f"{thehive_url}/api/v1/query"
@@ -127,8 +127,8 @@ def add_observables_to_item(item_type, item_id, observables_data, thehive_url, a
     url = f"{thehive_url}/api/v1/{item_type}/{item_id}/observable"
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'}
     proxies = {"http": None, "https": None}
-    
-    added_observables = [] 
+
+    added_observables = []
 
     for observable in observables_data:
         try:
@@ -184,7 +184,7 @@ def create_observables(observables, parent_domain=None, subdomain=None):
                 tag_parts = tag.split(':')
                 if len(tag_parts) == 2:
                     tag_info.append(f"*{tag_parts[0]}:* {tag_parts[1]}")
-        
+
         tags_message = "\n".join(tag_info) if tag_info else "No tags"
         message = f"**More information(s)**:\n{tags_message}"
 
@@ -202,11 +202,19 @@ def create_observables(observables, parent_domain=None, subdomain=None):
             observable_data['tags'] = obs['tags']
 
         observables_data.append(observable_data)
-    
+
     return observables_data
 
 
-def update_existing_alert_case(item_type, existing_item, observables, comment, thehive_url, api_key, parent_domain=None, subdomain=None):
+def update_existing_alert_case(
+        item_type,
+        existing_item,
+        observables,
+        comment,
+        thehive_url,
+        api_key,
+        parent_domain=None,
+        subdomain=None):
     """
     Update an existing alert or case by adding observables and a comment.
     Automatically adds parent_domain and subdomain tags to observables.
@@ -222,7 +230,7 @@ def update_existing_alert_case(item_type, existing_item, observables, comment, t
     :return: None
     """
     item_id = existing_item["_id"]
-    
+
     if observables:
         observables_data = create_observables(observables, parent_domain, subdomain)
         add_observables_to_item(item_type, item_id, observables_data, thehive_url, api_key)
@@ -231,7 +239,22 @@ def update_existing_alert_case(item_type, existing_item, observables, comment, t
         add_comment_to_item(item_type, item_id, comment, thehive_url, api_key)
 
 
-def create_new_alert(ticket_id, title, description, severity, tlp, pap, tags, app_name, observables, customFields, comment, thehive_url, api_key, parent_domain=None, subdomain=None):
+def create_new_alert(
+        ticket_id,
+        title,
+        description,
+        severity,
+        tlp,
+        pap,
+        tags,
+        app_name,
+        observables,
+        customFields,
+        comment,
+        thehive_url,
+        api_key,
+        parent_domain=None,
+        subdomain=None):
     from common.core import generate_ref
     """
     Create a new alert in TheHive with the provided details.
@@ -285,7 +308,7 @@ def create_new_alert(ticket_id, title, description, severity, tlp, pap, tags, ap
             clean_tag = str(tag).strip()
             if clean_tag not in clean_tags:
                 clean_tags.append(clean_tag)
-    
+
     enhanced_tags = clean_tags
 
     alert_data = {
@@ -299,7 +322,7 @@ def create_new_alert(ticket_id, title, description, severity, tlp, pap, tags, ap
         "source": "watcher",
         "sourceRef": ticket_id,
         "customFields": customFields or {
-            settings.THE_HIVE_CUSTOM_FIELD: {"string": ticket_id}, 
+            settings.THE_HIVE_CUSTOM_FIELD: {"string": ticket_id},
             "email-sender": {"string": settings.THE_HIVE_EMAIL_SENDER}
         }
     }
@@ -329,7 +352,20 @@ def create_new_alert(ticket_id, title, description, severity, tlp, pap, tags, ap
         return None
 
 
-def handle_alert_or_case(ticket_id, observables, comment, title, description, severity, tlp, pap, tags, app_name, customFields, thehive_url, api_key):
+def handle_alert_or_case(
+        ticket_id,
+        observables,
+        comment,
+        title,
+        description,
+        severity,
+        tlp,
+        pap,
+        tags,
+        app_name,
+        customFields,
+        thehive_url,
+        api_key):
     """
     Handle the creation or updating of alerts and cases in TheHive.
 
@@ -364,7 +400,7 @@ def handle_alert_or_case(ticket_id, observables, comment, title, description, se
         update_existing_alert_case("alert", alert_item, observables, comment, thehive_url, api_key)
     else:
         create_new_alert(
-            ticket_id=ticket_id, title=title, description=description, severity=severity, 
-            tlp=tlp, pap=pap, tags=tags, app_name=app_name, observables=observables, 
+            ticket_id=ticket_id, title=title, description=description, severity=severity,
+            tlp=tlp, pap=pap, tags=tags, app_name=app_name, observables=observables,
             customFields=customFields, comment=comment, thehive_url=thehive_url, api_key=api_key
         )

@@ -1,9 +1,10 @@
 from django.conf import settings
 
+
 def get_site_monitoring_template(website_status, website_url, alert_id):
     """
     Generate the HTML email body for site monitoring with the specified information.
-    
+
     :param website_status: The status of the website (e.g., OK, DOWN, etc.)
     :param website_url: The URL of the monitored website
     :param alert_id: The alert details including type, new IPs, and old IPs

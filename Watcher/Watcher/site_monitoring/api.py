@@ -21,7 +21,7 @@ class SiteViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = SiteSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         qs = Site.objects.all().order_by('-created_at', '-id')
         return qs
@@ -32,32 +32,32 @@ class SiteViewSet(viewsets.ModelViewSet):
         Get statistics for site monitoring.
         Returns total, malicious, takedown requests, and legal team counts.
         """
-        
+
         try:
             # Base queryset
             queryset = Site.objects.all()
-            
+
             # Total count
             total = queryset.count()
-            
+
             # Malicious count (legitimacy 5 or 6)
             malicious = queryset.filter(legitimacy__in=[5, 6]).count()
-            
+
             # Takedown requests
             takedown_requests = queryset.filter(takedown_request=True).count()
-            
+
             # Legal team involvement
             legal_team = queryset.filter(legal_team=True).count()
-            
+
             stats = {
                 'total': total,
                 'malicious': malicious,
                 'takedownRequests': takedown_requests,
                 'legalTeam': legal_team
             }
-                        
+
             return Response(stats, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response({
                 'status': 'error',
@@ -72,7 +72,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = AlertSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         qs = Alert.objects.select_related('site').order_by('-created_at', '-id')
         return qs

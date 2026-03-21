@@ -19,6 +19,7 @@ from django.db.models import Q
 # Configure logger
 logger = logging.getLogger('watcher.data_leak')
 
+
 def start_scheduler():
     """
     Launch multiple planning tasks in background:
@@ -117,7 +118,7 @@ def check_searx(keyword):
         # Only add quotes for simple keywords without special characters
         if not any(char in search_term for char in ['%', '@', '&', '+', '=']):
             search_term = '"' + search_term + '"'
-    
+
     params = {'q': search_term, 'engines': 'gitlab,github,bitbucket,apkmirror,gentoo,npm,stackoverflow,hoogle',
               'format': 'json'}
 
@@ -230,7 +231,7 @@ def check_pastebin(keywords):
             logger.info(f"Successfully processed {len(new_ids)} Pastebin posts.")
         else:
             logger.warning("Cannot Pull https://scrape.pastebin.com API. You need a Pastebin Pro Account. "
-                                  "Please verify that the software IP is whitelisted: https://pastebin.com/doc_scraping_api")
+                           "Please verify that the software IP is whitelisted: https://pastebin.com/doc_scraping_api")
     else:
         logger.warning("Cannot Pull https://scrape.pastebin.com API. API is in maintenance")
 
@@ -273,7 +274,7 @@ def check_keywords(keywords):
 def send_data_leak_notifications(alert):
     """
     Sends notifications to Slack, Citadel, TheHive or Email based on Data Leak.
-    
+
     :param alert: Alert Object.
     """
     subscribers = Subscriber.objects.filter(
@@ -282,7 +283,7 @@ def send_data_leak_notifications(alert):
 
     if not subscribers.exists():
         logger.info("No subscribers for Data Leak, no message sent.")
-        return    
+        return
 
     context_data = {
         'alert': alert
@@ -304,14 +305,13 @@ def send_data_leak_notifications_group(keyword, alerts_number, alerts):
         Q(slack=True) | Q(citadel=True) | Q(thehive=True) | Q(email=True)
     )
 
-
     if not subscribers.exists():
         logger.info("No subscribers for Data Leak group, no message sent.")
         return
 
     context_data_group = {
         'keyword': keyword,
-        'alerts_number': alerts_number, 
+        'alerts_number': alerts_number,
     }
 
     send_app_specific_notifications_group('data_leak_group', context_data_group, subscribers)
@@ -319,7 +319,7 @@ def send_data_leak_notifications_group(keyword, alerts_number, alerts):
     for index, alert in enumerate(alerts):
 
         context_data_thehive = {
-            'alert': alert,  
+            'alert': alert,
         }
 
         send_only_thehive_notifications('data_leak', context_data_thehive, subscribers)

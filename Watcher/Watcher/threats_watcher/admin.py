@@ -116,10 +116,10 @@ class TrendyWordAdmin(ExportMixin, admin.ModelAdmin):
 
 class SubscriberAdmin(admin.ModelAdmin):
     list_display = ('user_rec', 'created_at', 'email', 'thehive', 'slack', 'citadel')
-    list_filter = ('email', 'thehive', 'slack', 'citadel') 
+    list_filter = ('email', 'thehive', 'slack', 'citadel')
     search_fields = ('user_rec__username',)
     fieldsets = (
-        (None, { 
+        (None, {
             'fields': ('user_rec', 'created_at')
         }),
         ('Notification Channels', {
@@ -127,5 +127,6 @@ class SubscriberAdmin(admin.ModelAdmin):
             'description': "Select the notification channels for this subscriber."
         }),
     )
+
 
 admin.site.register(Subscriber, SubscriberAdmin)

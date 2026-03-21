@@ -18,7 +18,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('domain_name', models.CharField(max_length=255, unique=True)),
-                ('misp_event_uuid', django_mysql.models.ListCharField(models.CharField(max_length=36), blank=True, max_length=370, null=True, size=10)),
+                ('misp_event_uuid', django_mysql.models.ListCharField(models.CharField(
+                    max_length=36), blank=True, max_length=370, null=True, size=10)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],

@@ -16,11 +16,12 @@ class APIKey(models.Model):
     class Meta:
         verbose_name = "API Key"
         verbose_name_plural = "API Keys"
-        app_label = 'accounts' 
+        app_label = 'accounts'
 
 
 def make_inactive(sender, user, **kwargs):
     if not User.objects.filter(username=user.username):
         user.is_active = False
+
 
 populate_user.connect(make_inactive)

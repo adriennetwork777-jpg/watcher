@@ -13,12 +13,35 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Summary',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('weekly_summary', 'Weekly Summary'), ('breaking_news', 'Breaking News'), ('trendy_word_summary', 'Trendy Word Summary')], default='weekly_summary', max_length=30)),
-                ('keywords', models.CharField(blank=True, max_length=500)),
-                ('summary_text', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('id',
+                 models.BigAutoField(
+                     auto_created=True,
+                     primary_key=True,
+                     serialize=False,
+                     verbose_name='ID')),
+                ('type',
+                 models.CharField(
+                     choices=[
+                         ('weekly_summary',
+                          'Weekly Summary'),
+                         ('breaking_news',
+                          'Breaking News'),
+                         ('trendy_word_summary',
+                          'Trendy Word Summary')],
+                     default='weekly_summary',
+                     max_length=30)),
+                ('keywords',
+                 models.CharField(
+                     blank=True,
+                     max_length=500)),
+                ('summary_text',
+                 models.TextField()),
+                ('created_at',
+                 models.DateTimeField(
+                     auto_now_add=True)),
+                ('updated_at',
+                 models.DateTimeField(
+                     auto_now=True)),
             ],
             options={
                 'verbose_name_plural': 'Summaries',

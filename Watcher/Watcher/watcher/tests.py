@@ -19,7 +19,7 @@ class SettingsConfigurationTest(TestCase):
         with patch.dict(os.environ, {'DJANGO_DEBUG': 'False'}):
             debug_value = os.environ.get('DJANGO_DEBUG', '') != 'False'
             self.assertFalse(debug_value)
-        
+
         with patch.dict(os.environ, {'DJANGO_DEBUG': 'True'}):
             debug_value = os.environ.get('DJANGO_DEBUG', '') != 'False'
             self.assertTrue(debug_value)
@@ -87,7 +87,7 @@ class SettingsConfigurationTest(TestCase):
 
 class EnvironmentVariableConfigTest(TestCase):
     """Test environment variable configuration without reloading Django settings."""
-    
+
     def test_email_ssl_tls_boolean_conversion_logic(self):
         """Test email SSL/TLS boolean conversion logic."""
         test_cases = [
@@ -98,7 +98,7 @@ class EnvironmentVariableConfigTest(TestCase):
             ('', ''),
             (None, False),
         ]
-        
+
         for input_val, expected in test_cases:
             with self.subTest(input_val=input_val):
                 if input_val is not None:
@@ -125,7 +125,7 @@ class EnvironmentVariableConfigTest(TestCase):
             ('False', False),
             ('anything_else', 'anything_else'),
         ]
-        
+
         for input_val, expected in test_cases:
             misp_verify_ssl = os.environ.get('MISP_VERIFY_SSL', False) if input_val else False
             if input_val:
@@ -134,7 +134,7 @@ class EnvironmentVariableConfigTest(TestCase):
                     misp_verify_ssl = True
                 elif misp_verify_ssl == "False":
                     misp_verify_ssl = False
-            
+
             if input_val in ['True', 'False']:
                 self.assertEqual(misp_verify_ssl, expected, f"Failed for input: {input_val}")
 
@@ -144,7 +144,7 @@ class EnvironmentVariableConfigTest(TestCase):
         result = test_input.split(",")
         expected = ["Custom", "Tag1", "Tag2", "Tag3"]
         self.assertEqual(result, expected)
-        
+
         default_hive_tags = "Watcher,Impersonation,Malicious Domain,Typosquatting".split(",")
         expected_hive = ["Watcher", "Impersonation", "Malicious Domain", "Typosquatting"]
         self.assertEqual(default_hive_tags, expected_hive)
@@ -156,7 +156,7 @@ class EnvironmentVariableConfigTest(TestCase):
             ('25', 25),
             ('465', 465),
         ]
-        
+
         for input_val, expected in test_cases:
             result = int(os.environ.get('EMAIL_PORT', input_val))
             self.assertEqual(result, expected)
@@ -167,7 +167,7 @@ class EnvironmentVariableConfigTest(TestCase):
         base_hosts = ['0.0.0.0', '127.0.0.1', 'localhost']
         additional_hosts = 'example.com,test.com'
         final_hosts = base_hosts + additional_hosts.split(',')
-        
+
         self.assertIn('example.com', final_hosts)
         self.assertIn('test.com', final_hosts)
         self.assertIn('localhost', final_hosts)
@@ -179,19 +179,19 @@ class EnvironmentVariableConfigTest(TestCase):
             'https://' + domain,
             'http://' + domain
         ]
-        
+
         self.assertIn('https://example.com', csrf_origins)
         self.assertIn('http://example.com', csrf_origins)
 
 
 class SettingsValidationTest(TestCase):
     """Test settings validation and required configurations."""
-    
+
     def test_required_installed_apps_present(self):
         """Test that all required Django apps are installed."""
         required_apps = [
             'django.contrib.contenttypes',
-            'django.contrib.admin', 
+            'django.contrib.admin',
             'django.contrib.auth',
             'django.contrib.sessions',
             'django.contrib.messages',
@@ -200,7 +200,7 @@ class SettingsValidationTest(TestCase):
             'rest_framework',
             'knox',
         ]
-        
+
         for app in required_apps:
             with self.subTest(app=app):
                 self.assertIn(app, settings.INSTALLED_APPS)
@@ -215,7 +215,7 @@ class SettingsValidationTest(TestCase):
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
         ]
-        
+
         for middleware in required_middleware:
             with self.subTest(middleware=middleware):
                 self.assertIn(middleware, settings.MIDDLEWARE)
@@ -236,18 +236,18 @@ class SettingsValidationTest(TestCase):
     def test_password_validators_configured(self):
         """Test that password validators are properly configured."""
         self.assertTrue(len(settings.AUTH_PASSWORD_VALIDATORS) > 0)
-        
+
         validator_names = [
             validator['NAME'] for validator in settings.AUTH_PASSWORD_VALIDATORS
         ]
-        
+
         expected_validators = [
             'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
             'django.contrib.auth.password_validation.MinimumLengthValidator',
             'django.contrib.auth.password_validation.CommonPasswordValidator',
             'django.contrib.auth.password_validation.NumericPasswordValidator',
         ]
-        
+
         for validator in expected_validators:
             with self.subTest(validator=validator):
                 self.assertIn(validator, validator_names)

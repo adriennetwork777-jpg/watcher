@@ -24,7 +24,7 @@ class AlertResource(resources.ModelResource):
 class Alert(ExportMixin, admin.ModelAdmin):
     list_display = ['id', 'dns_twisted', 'status', 'created_at']
     list_filter = ('created_at', ('status', custom_titled_filter('Active Status')))
-    search_fields = ['id', 'dns_twisted__domain_name']  
+    search_fields = ['id', 'dns_twisted__domain_name']
     resource_class = AlertResource
 
     def has_add_permission(self, request):
@@ -97,12 +97,12 @@ class DnsTwisted(ExportMixin, admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
-    
+
     def display_misp_uuid(self, obj):
         uuid = get_misp_uuid(obj.domain_name)
         if not uuid:
             return "-"
-        
+
         if len(uuid) == 1:
             return uuid[0]
         else:
@@ -114,10 +114,10 @@ class DnsTwisted(ExportMixin, admin.ModelAdmin):
 @admin.register(Subscriber)
 class Subscriber(admin.ModelAdmin):
     list_display = ('user_rec', 'created_at', 'email', 'thehive', 'slack', 'citadel')
-    list_filter = ('email', 'thehive', 'slack', 'citadel') 
+    list_filter = ('email', 'thehive', 'slack', 'citadel')
     search_fields = ('user_rec__username',)
     fieldsets = (
-        (None, { 
+        (None, {
             'fields': ('user_rec', 'created_at')
         }),
         ('Notification Channels', {

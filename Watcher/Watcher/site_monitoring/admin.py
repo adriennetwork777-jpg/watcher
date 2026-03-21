@@ -62,17 +62,27 @@ class SiteResource(resources.ModelResource):
     class Meta:
         model = Site
         exclude = (
-        'misp_event_uuid', 'monitored', 'content_monitoring', 'content_fuzzy_hash', 'mail_monitoring',
-        'ip_monitoring')
+            'misp_event_uuid', 'monitored', 'content_monitoring', 'content_fuzzy_hash', 'mail_monitoring',
+            'ip_monitoring')
 
 
 @admin.register(Site)
 class Site(ExportMixin, admin.ModelAdmin):
-    list_display = ['rtir', 'domain_name', 'ticket_id', 'registrar', 'legitimacy', 'ip', 'ip_second', 
+    list_display = ['rtir', 'domain_name', 'ticket_id', 'registrar', 'legitimacy', 'ip', 'ip_second',
                     'monitored', 'web_status', 'takedown_request', 'legal_team', 'blocking_request',
                     'display_misp_uuid', 'created_at', 'expiry', 'domain_created_at', 'domain_expiry', 'ssl_expiry']
-    list_filter = ['created_at', 'expiry', 'domain_created_at', 'domain_expiry', 'ssl_expiry', 'monitored', 'web_status', 'legitimacy', 
-                   'takedown_request', 'legal_team', 'blocking_request']
+    list_filter = [
+        'created_at',
+        'expiry',
+        'domain_created_at',
+        'domain_expiry',
+        'ssl_expiry',
+        'monitored',
+        'web_status',
+        'legitimacy',
+        'takedown_request',
+        'legal_team',
+        'blocking_request']
     search_fields = ['rtir', 'domain_name', 'ip', 'ip_second', 'registrar']
     resource_class = SiteResource
     readonly_fields = ['display_misp_uuid']
@@ -84,7 +94,7 @@ class Site(ExportMixin, admin.ModelAdmin):
         uuid = get_misp_uuid(obj.domain_name)
         if not uuid:
             return "-"
-        
+
         if len(uuid) == 1:
             return uuid[0]
         else:
@@ -96,10 +106,10 @@ class Site(ExportMixin, admin.ModelAdmin):
 @admin.register(Subscriber)
 class Subscriber(admin.ModelAdmin):
     list_display = ('user_rec', 'created_at', 'email', 'thehive', 'slack', 'citadel')
-    list_filter = ('email', 'thehive', 'slack', 'citadel') 
+    list_filter = ('email', 'thehive', 'slack', 'citadel')
     search_fields = ('user_rec__username',)
     fieldsets = (
-        (None, { 
+        (None, {
             'fields': ('user_rec', 'created_at')
         }),
         ('Notification Channels', {

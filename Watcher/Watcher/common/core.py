@@ -9,8 +9,8 @@ import re
 from html import unescape
 from site_monitoring.models import Site
 from common.models import LegitimateDomain
-from datetime import datetime  
-from secrets import token_hex  
+from datetime import datetime
+from secrets import token_hex
 from .mail_template.threats_watcher_template import get_threats_watcher_template
 from .mail_template.threats_watcher_weeklysummary_template import get_threats_watcher_weeklysummary_template
 from .mail_template.threats_watcher_breakingnews_template import get_threats_watcher_breakingnews_template
@@ -46,13 +46,23 @@ def start_scheduler():
                       max_instances=10,
                       replace_existing=True)
 
-    scheduler.add_job(update_legitimate_domains_rdap_data, 'cron', day_of_week='mon-sun', minute='*/30', id='legitimate_rdap_job',
-                      max_instances=1,
-                      replace_existing=True)
+    scheduler.add_job(
+        update_legitimate_domains_rdap_data,
+        'cron',
+        day_of_week='mon-sun',
+        minute='*/30',
+        id='legitimate_rdap_job',
+        max_instances=1,
+        replace_existing=True)
 
-    scheduler.add_job(update_monitored_sites_rdap_data, 'cron', day_of_week='mon-sun', hour='*/1', id='monitored_sites_rdap_job',
-                      max_instances=1,
-                      replace_existing=True)
+    scheduler.add_job(
+        update_monitored_sites_rdap_data,
+        'cron',
+        day_of_week='mon-sun',
+        hour='*/1',
+        id='monitored_sites_rdap_job',
+        max_instances=1,
+        replace_existing=True)
 
     scheduler.add_job(update_all_ssl_certificates, 'cron', day_of_week='mon-sun', hour='*/6', id='ssl_check_job',
                       max_instances=1,
@@ -67,6 +77,7 @@ def generate_ref():
     """
     ref = datetime.now().strftime("%y%m%d") + "-" + str(token_hex(3))[:5]
     return ref
+
 
 SLACK_CHANNEL = getattr(settings, 'SLACK_CHANNEL', '')
 CITADEL_ROOM_ID = getattr(settings, 'CITADEL_ROOM_ID', '')
@@ -139,7 +150,7 @@ APP_CONFIG_SLACK = {
             "*• New Ip Second:* {new_ip_second}\n"
             "*• Old IP Second:* {old_ip_second}\n"
             "*• New MX Records:* {new_mx_records}\n"
-            "*• Old MX Records:* {old_mx_records}\n"            
+            "*• Old MX Records:* {old_mx_records}\n"
             "*• New Mail Server:* {new_mail_A_record_ip}\n"
             "*• Old Mail Server:* {old_mail_A_record_ip}\n\n"
             "Please, find more details <{details_url}|here>."
@@ -242,7 +253,7 @@ APP_CONFIG_CITADEL = {
             "<li><strong>New Ip Second:</strong> {new_ip_second}</li>"
             "<li><strong>Old IP Second:</strong> {old_ip_second}</li>"
             "<li><strong>New MX Records:</strong> {new_mx_records}</li>"
-            "<li><strong>Old MX Records:</strong> {old_mx_records}</li>"            
+            "<li><strong>Old MX Records:</strong> {old_mx_records}</li>"
             "<li><strong>New Mail Server:</strong> {new_mail_A_record_ip}</li>"
             "<li><strong>Old Mail Server:</strong> {old_mail_A_record_ip}</li>"
             "</ul>"
@@ -397,8 +408,8 @@ def collect_observables(app_name, context_data):
     if app_name == 'threats_watcher':
         email_words = context_data.get('email_words', [])
         for word in email_words:
-            clean_word = re.sub(r'<[^>]*>', '', word) 
-            if re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', clean_word): 
+            clean_word = re.sub(r'<[^>]*>', '', word)
+            if re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', clean_word):
                 observables.append({"dataType": "domain", "data": clean_word})
             else:
                 observables.append({"dataType": "other", "data": clean_word})
@@ -406,34 +417,42 @@ def collect_observables(app_name, context_data):
     elif app_name == 'website_monitoring':
         site = context_data.get('site')
         alert_data = context_data.get('alert_data', {})
-        alert_type = alert_data.get('type') 
+        alert_type = alert_data.get('type')
         if site:
-            domain_tag = f"domain_name:{site.domain_name}" 
+            domain_tag = f"domain_name:{site.domain_name}"
             observable = {"dataType": "domain", "data": site.domain_name, "tags": [domain_tag]}
             observables.append(observable)
             if alert_data.get('new_ip'):
-                observable = {"dataType": "ip", "data": alert_data['new_ip'], "tags": [domain_tag, f"type:{alert_type}", "details:new_ip"]}
+                observable = {"dataType": "ip", "data": alert_data['new_ip'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:new_ip"]}
                 observables.append(observable)
             if alert_data.get('old_ip'):
-                observable = {"dataType": "ip", "data": alert_data['old_ip'], "tags": [domain_tag, f"type:{alert_type}", "details:old_ip"]}
+                observable = {"dataType": "ip", "data": alert_data['old_ip'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:old_ip"]}
                 observables.append(observable)
             if alert_data.get('new_ip_second'):
-                observable = {"dataType": "ip", "data": alert_data['new_ip_second'], "tags": [domain_tag, f"type:{alert_type}", "details:new_ip_second"]}
+                observable = {"dataType": "ip", "data": alert_data['new_ip_second'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:new_ip_second"]}
                 observables.append(observable)
             if alert_data.get('old_ip_second'):
-                observable = {"dataType": "ip", "data": alert_data['old_ip_second'], "tags": [domain_tag, f"type:{alert_type}", "details:old_ip_second"]}
+                observable = {"dataType": "ip", "data": alert_data['old_ip_second'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:old_ip_second"]}
                 observables.append(observable)
             if alert_data.get('new_MX_records'):
-                observable = {"dataType": "other", "data": alert_data['new_MX_records'], "tags": [domain_tag, f"type:{alert_type}", "details:new_MX_records"]}
+                observable = {"dataType": "other", "data": alert_data['new_MX_records'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:new_MX_records"]}
                 observables.append(observable)
             if alert_data.get('old_MX_records'):
-                observable = {"dataType": "other", "data": alert_data['old_MX_records'], "tags": [domain_tag, f"type:{alert_type}", "details:old_MX_records"]}
+                observable = {"dataType": "other", "data": alert_data['old_MX_records'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:old_MX_records"]}
                 observables.append(observable)
             if alert_data.get('new_mail_A_record_ip'):
-                observable = {"dataType": "ip", "data": alert_data['new_mail_A_record_ip'], "tags": [domain_tag, f"type:{alert_type}", "details:new_mail_A_record_ip"]}
+                observable = {"dataType": "ip", "data": alert_data['new_mail_A_record_ip'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:new_mail_A_record_ip"]}
                 observables.append(observable)
             if alert_data.get('old_mail_A_record_ip'):
-                observable = {"dataType": "ip", "data": alert_data['old_mail_A_record_ip'], "tags": [domain_tag, f"type:{alert_type}", "details:old_mail_A_record_ip"]}
+                observable = {"dataType": "ip", "data": alert_data['old_mail_A_record_ip'], "tags": [
+                    domain_tag, f"type:{alert_type}", "details:old_mail_A_record_ip"]}
                 observables.append(observable)
 
     elif app_name == 'data_leak':
@@ -448,32 +467,32 @@ def collect_observables(app_name, context_data):
         alert = context_data.get('alert')
         if alert and alert.dns_twisted:
             subdomain = alert.dns_twisted.domain_name
-            
+
             extracted = tldextract.extract(subdomain)
             domain_part = extracted.domain
             suffix_part = extracted.suffix
-            
+
             if domain_part and suffix_part:
                 parent_domain = f"{domain_part}.{suffix_part}"
-                
+
                 subdomain_observable = {"dataType": "domain", "data": subdomain, "tags": []}
-                
+
                 if alert.dns_twisted.fuzzer:
                     subdomain_observable["tags"].append(f"fuzzer:{alert.dns_twisted.fuzzer}")
                 if alert.dns_twisted.dns_monitored:
                     subdomain_observable["tags"].append(f"corporate_dns:{alert.dns_twisted.dns_monitored.domain_name}")
                 if alert.dns_twisted.keyword_monitored:
                     subdomain_observable["tags"].append(f"corporate_keyword:{alert.dns_twisted.keyword_monitored.name}")
-                
+
                 subdomain_observable["tags"].append(f"parent_domain:{parent_domain}")
                 subdomain_observable["tags"].append(f"subdomain:{subdomain}")
 
                 observables.append(subdomain_observable)
-                
+
                 if subdomain != parent_domain:
                     parent_observable = {
-                        "dataType": "domain", 
-                        "data": parent_domain, 
+                        "dataType": "domain",
+                        "data": parent_domain,
                         "tags": [
                             f"parent_domain:{parent_domain}",
                             "domain_type:parent"
@@ -481,7 +500,8 @@ def collect_observables(app_name, context_data):
                     }
                     observables.append(parent_observable)
 
-    observables = [observable for observable in observables if observable['data'] is not None and observable['data'] != 'None']
+    observables = [observable for observable in observables if observable['data']
+                   is not None and observable['data'] != 'None']
 
     return observables
 
@@ -572,7 +592,8 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
                 }
 
             else:
-                words_list = '\n'.join([remove_html_tags(unescape(word)) for word in context_data.get('email_words', [])])
+                words_list = '\n'.join([remove_html_tags(unescape(word))
+                                       for word in context_data.get('email_words', [])])
                 if not words_list:
                     return
                 email_conf = APP_CONFIG_EMAIL['threats_watcher']
@@ -585,7 +606,6 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
                     'details_url': settings.WATCHER_URL + app_config_slack['url_suffix'],
                     'app_name': 'threats_watcher'
                 }
-
 
         elif app_name == 'website_monitoring':
             site = context_data.get('site')
@@ -615,13 +635,12 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
             alert_id = alert_data.get('id', '-')
             email_body = get_site_monitoring_template(website_url, alert_id, alert_data)
 
-
         elif app_name == 'data_leak':
             alert = context_data.get('alert')
 
             if not alert:
                 return
-            
+
             common_data = {
                 'alert_pk': alert.pk,
                 'keyword_name': alert.keyword.name,
@@ -633,33 +652,30 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
             email_words = context_data.get('alert', [])
             email_body = get_data_leak_template(alert)
 
-
         elif app_name == 'dns_finder':
             alert = context_data.get('alert')
 
             if not alert or not alert.dns_twisted or not alert.dns_twisted.domain_name:
-                logger.warning(f"No valid alert data found or DNS Twisted information missing.")
+                logger.warning("No valid alert data found or DNS Twisted information missing.")
                 return
 
             subdomain = alert.dns_twisted.domain_name
             dns_domain_name_sanitized = (
-                getattr(alert.dns_twisted, 'dns_domain_name_sanitized', None) or 
-                alert.dns_twisted.domain_name.replace('.', '[.]')
+                getattr(alert.dns_twisted, 'dns_domain_name_sanitized', None)
+                or alert.dns_twisted.domain_name.replace('.', '[.]')
             )
 
             if subscribers.filter(thehive=True).exists() and app_config_thehive:
                 current_time = timezone.now()
                 extracted = tldextract.extract(subdomain)
-                subdomain_part = extracted.subdomain
                 domain_part = extracted.domain
                 suffix_part = extracted.suffix
 
                 if not suffix_part:
-                    logger.warning(f"No valid suffix found for domain: {subdomain}")
+                    logger.warning("No valid suffix found for domain: %s", subdomain)
                     return
 
                 parent_domain = f"{domain_part}.{suffix_part}"
-                is_parent_domain = (not subdomain_part)
 
                 observables_dns = collect_observables('dns_finder', context_data)
                 parent_site = Site.objects.filter(domain_name=parent_domain).first()
@@ -671,7 +687,7 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
                 if parent_site and parent_site.ticket_id:
                     ticket_id = parent_site.ticket_id
                     logger.info(f"Found parent domain {parent_domain} in Site model with ticket_id: {ticket_id}")
-                    
+
                     alert_type, alert_item = search_thehive_for_ticket_id(
                         ticket_id, settings.THE_HIVE_URL, settings.THE_HIVE_KEY, "alert"
                     )
@@ -682,14 +698,14 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
                     )
                     if isinstance(case_item, list):
                         case_item = case_item[0] if case_item else None
-                    
+
                     if case_item:
                         existing_item = case_item
                         item_type = "case"
                     elif alert_item:
                         existing_item = alert_item
                         item_type = "alert"
-                
+
                 # Step 2: Search by observables in TheHive
                 if not existing_item:
                     item_type, item_obj = search_thehive_for_observable(
@@ -701,7 +717,7 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
 
                 # Step 3: If still not found, use generated ticket_id
                 if not ticket_id:
-                    ticket_id = generate_ref() 
+                    ticket_id = generate_ref()
 
                 current_time_str = current_time.strftime("%H:%M:%S")
                 current_date_str = current_time.strftime("%Y-%m-%d")
@@ -775,7 +791,6 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
                 'app_name': 'dns_finder'
             }
 
-
         send_notification(
             channel="slack",
             content_template=app_config_slack['content_template'],
@@ -790,14 +805,14 @@ def send_app_specific_notifications(app_name, context_data, subscribers):
             content_template=app_config_citadel['content_template'],
             subscribers_filter={'citadel': True},
             send_func=lambda content: send_citadel_message(
-                content={  
+                content={
                     "msgtype": "m.text",
                     "format": "org.matrix.custom.html",
-                    "body": citadel_title + " - New Incident Alert", 
-                    "formatted_body": content.replace('\n', '<br>')  
+                    "body": citadel_title + " - New Incident Alert",
+                    "formatted_body": content.replace('\n', '<br>')
                 },
-                room_id=app_config_citadel['citadel_room_id'], 
-                app_name=common_data.get('app_name')  
+                room_id=app_config_citadel['citadel_room_id'],
+                app_name=common_data.get('app_name')
             ),
             title=citadel_title,
             **common_data
@@ -901,20 +916,19 @@ def send_app_specific_notifications_group(app_name, context_data, subscribers):
 
             if not keyword:
                 return
-            
+
             common_data = {
                 'alerts_number': alerts_number,
                 'keyword': keyword,
                 'details_url': settings.WATCHER_URL + app_config_slack['url_suffix'],
                 'app_name': 'data_leak_group'
             }
-            email_words = [keyword, alerts_number]
             email_body = get_data_leak_group_template
 
         elif app_name == 'dns_finder_group':
             dns_monitored = context_data.get('dns_monitored')
             alerts_number = context_data.get('alerts_number')
-            
+
             if not dns_monitored or not alerts_number or not dns_monitored.domain_name:
                 return
 
@@ -924,7 +938,6 @@ def send_app_specific_notifications_group(app_name, context_data, subscribers):
                 'details_url': settings.WATCHER_URL + app_config_slack['url_suffix'],
                 'app_name': 'dns_finder_group',
             }
-            email_words = [dns_monitored, alerts_number]
             email_body = get_dns_finder_group_template
 
         # Sending Slack notifications
@@ -964,7 +977,7 @@ def send_app_specific_notifications_group(app_name, context_data, subscribers):
                     email_subject = app_config_email['subject'].format(**common_data)
 
                     if app_name == 'data_leak_group':
-                        email_body = get_data_leak_group_template(keyword, alerts_number)  
+                        email_body = get_data_leak_group_template(keyword, alerts_number)
                     elif app_name == 'dns_finder_group':
                         email_body = get_dns_finder_group_template(dns_monitored, alerts_number)
                     else:
@@ -997,7 +1010,7 @@ def send_only_thehive_notifications(app_name, context_data, subscribers):
 
     if not subscribers.exists():
         return
-    
+
     observables = collect_observables(app_name, context_data)
 
     thehive_url = settings.THE_HIVE_URL
@@ -1015,7 +1028,7 @@ def send_only_thehive_notifications(app_name, context_data, subscribers):
 
             if not alert:
                 return
-            
+
             common_data = {
                 'alert_pk': alert.pk,
                 'keyword_name': alert.keyword.name,
@@ -1117,7 +1130,7 @@ def update_legitimate_domains_rdap_data():
 
             expiration_date = rdap.get_expiration_date()
             registration_date = rdap.get_registration_date()
-            
+
             updated_fields = []
 
             # Update expiration date
@@ -1151,14 +1164,14 @@ def update_legitimate_domains_rdap_data():
                     existing_registered_at = domain.domain_created_at
                     if isinstance(existing_registered_at, datetime):
                         existing_registered_at = existing_registered_at.date()
-                    
+
                     if existing_registered_at != new_registered_at:
                         old_registered_at = existing_registered_at
                         domain.domain_created_at = new_registered_at
                         updated_fields.append('domain_created_at')
                         logger.info(
-                            f"{method} update for {domain.domain_name}: registration date changed from {old_registered_at} to {new_registered_at}"
-                        )
+                            f"{method} update for {
+                                domain.domain_name}: registration date changed from {old_registered_at} to {new_registered_at}")
             else:
                 logger.warning(f"No registration date available for {domain.domain_name}")
 
@@ -1173,30 +1186,29 @@ def update_legitimate_domains_rdap_data():
     # Update SSL certificates for legitimate domains
     logger.info("CRON TASK: SSL Certificate Check for Legitimate Domains")
     from .utils.ssl_checker import SSLCertificateChecker
-    
+
     for domain in domains:
         try:
             checker = SSLCertificateChecker(domain.domain_name)
-            
+
             if checker.fetch_certificate():
                 ssl_expiry = checker.get_expiration_date()
-                
+
                 if ssl_expiry:
                     # Only update if different
                     if str(domain.ssl_expiry) != ssl_expiry:
                         old_ssl_expiry = domain.ssl_expiry
                         domain.ssl_expiry = ssl_expiry
                         domain.save(update_fields=['ssl_expiry'])
-                        
+
                         logger.info(f"Updated SSL expiry for {domain.domain_name}: {old_ssl_expiry} → {ssl_expiry}")
                 else:
                     logger.warning(f"Could not extract SSL expiry date for {domain.domain_name}")
             else:
                 logger.debug(f"No SSL certificate found for {domain.domain_name}")
-                
+
         except Exception as e:
             logger.error(f"Error checking SSL for {domain.domain_name}: {str(e)}")
-
 
 
 def update_monitored_sites_rdap_data():
@@ -1227,7 +1239,7 @@ def update_monitored_sites_rdap_data():
             registrar = rdap.get_registrar()
             expiration_date = rdap.get_expiration_date()
             registration_date = rdap.get_registration_date()
-            
+
             updated = False
             update_info = []
             old_legitimacy = site.legitimacy
@@ -1238,12 +1250,12 @@ def update_monitored_sites_rdap_data():
                 site.registrar = registrar
                 updated = True
                 update_info.append(f"registrar: {old_registrar} → {registrar}")
-                
+
                 # Auto-update legitimacy based on registration status
                 if site.auto_update_legitimacy_on_registration():
                     update_info.append(f"legitimacy: {old_legitimacy} → {site.legitimacy} (now registered)")
                     logger.info(f"Auto-updated legitimacy for {site.domain_name}: available/disabled → registered")
-                
+
                 # Create alert for registrar change
                 if old_registrar:
                     from site_monitoring.models import Alert
@@ -1258,13 +1270,13 @@ def update_monitored_sites_rdap_data():
             if expiration_date:
                 try:
                     new_expiry = datetime.strptime(expiration_date, '%Y-%m-%d').date()
-                    
+
                     if site.domain_expiry != new_expiry:
                         old_expiry = site.domain_expiry
                         site.domain_expiry = new_expiry
                         updated = True
                         update_info.append(f"domain_expiry: {old_expiry} → {new_expiry}")
-                        
+
                         # Create alert for expiry change
                         if old_expiry:
                             from site_monitoring.models import Alert
@@ -1281,14 +1293,15 @@ def update_monitored_sites_rdap_data():
             if registration_date:
                 try:
                     new_registered_at = datetime.strptime(registration_date, '%Y-%m-%d').date()
-                    
+
                     if site.domain_created_at != new_registered_at:
                         old_registered_at = site.domain_created_at
                         site.domain_created_at = new_registered_at
                         updated = True
                         update_info.append(f"domain_created_at: {old_registered_at} → {new_registered_at}")
                 except Exception as e:
-                    logger.warning(f"Could not parse registration date '{registration_date}' for {site.domain_name}: {str(e)}")
+                    logger.warning(
+                        f"Could not parse registration date '{registration_date}' for {site.domain_name}: {str(e)}")
 
             if updated:
                 site.save()
@@ -1306,8 +1319,8 @@ def update_all_ssl_certificates():
     """
     close_old_connections()
     logger.info("CRON TASK: SSL Certificate Check for Monitored Sites")
-    
+
     from .utils.ssl_checker import update_all_sites_ssl_certificates
-    
+
     success_count = update_all_sites_ssl_certificates()
     logger.info(f"SSL certificate check completed: {success_count} sites updated")

@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 def get_threats_watcher_breakingnews_template(summary_text):
     summary_html = summary_text.replace('\n', '<br>')
     body = """\

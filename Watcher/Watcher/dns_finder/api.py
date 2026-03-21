@@ -39,7 +39,7 @@ class DnsTwistedViewSet(viewsets.ModelViewSet):
     ]
     serializer_class = DnsTwistedSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         return DnsTwisted.objects.select_related(
             'dns_monitored',
@@ -51,10 +51,10 @@ class DnsTwistedViewSet(viewsets.ModelViewSet):
 class AlertViewSet(viewsets.ModelViewSet):
     permission_classes = [
         permissions.DjangoModelPermissions
-    ]    
+    ]
     serializer_class = AlertSerializer
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self):
         return Alert.objects.select_related(
             'dns_twisted',

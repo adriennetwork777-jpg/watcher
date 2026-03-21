@@ -17,7 +17,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='trendyword',
             name='occurrences',
-            field=models.IntegerField(default=1, help_text='Incremented by one when the same word is found in another post from RSS Feeds.'),
+            field=models.IntegerField(
+                default=1, help_text='Incremented by one when the same word is found in another post from RSS Feeds.'),
         ),
         migrations.CreateModel(
             name='Subscriber',

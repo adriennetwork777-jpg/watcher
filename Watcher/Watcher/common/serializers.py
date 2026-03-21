@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import LegitimateDomain
 
 # Legitimate Domain Serializer
+
+
 class LegitimateDomainSerializer(serializers.ModelSerializer):
     class Meta:
         model = LegitimateDomain

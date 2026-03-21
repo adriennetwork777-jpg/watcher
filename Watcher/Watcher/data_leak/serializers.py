@@ -8,7 +8,7 @@ class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
         fields = '__all__'
-    
+
     def validate(self, data):
         """
         Validate regex pattern if is_regex is True
