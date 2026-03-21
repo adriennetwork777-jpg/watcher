@@ -125,7 +125,7 @@ COPY --from=backend-builder /usr/local/share/nltk_data /usr/local/share/nltk_dat
 COPY . .
 
 # Copy frontend build output from builder
-COPY --from=frontend-builder /build/Watcher/frontend/static /app/Watcher/static
+COPY --from=frontend-builder /build/Watcher/frontend/static ./Watcher/static
 
 WORKDIR /app/Watcher
 
