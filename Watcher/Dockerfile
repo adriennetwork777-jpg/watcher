@@ -1,10 +1,4 @@
 #################################################
-#                                               #
-#   DOCKERFILE – Watcher                        #
-#                                               #
-#################################################
-
-#################################################
 #               BUILD ARGS                      #
 #################################################
 ARG PYTHON_VERSION=3.11.14
@@ -14,7 +8,7 @@ ARG HTTPS_PROXY
 ARG NO_PROXY
 
 #################################################
-#                FRONTEND BUILD                #
+#                FRONTEND BUILD                 #
 #################################################
 FROM node:18-bookworm-slim AS frontend-builder
 
@@ -29,7 +23,7 @@ COPY . .
 RUN npm install
 
 #################################################
-#                BACKEND BUILD                 #
+#                BACKEND BUILD                  #
 #################################################
 FROM python:3.11-slim-bookworm AS backend-builder
 
@@ -72,17 +66,16 @@ nltk.download("punkt", download_dir="/usr/local/share/nltk_data")
 nltk.download("stopwords", download_dir="/usr/local/share/nltk_data")
 EOF
 
-
 #################################################
-#                   RUNTIME                    #
+#                   RUNTIME                     #
 #################################################
 FROM python:3.11-slim-bookworm
 
 LABEL title='Watcher' \
-        description='Watcher is a Django & React JS automated platform for discovering new potentially cybersecurity threats targeting your organisation.' \
-        documentation='https://thalesgroup-cert.github.io/Watcher/' \
-        source='https://github.com/thalesgroup-cert/Watcher' \
-        maintainer='ygalnezri@icloud.com'
+      description='Watcher is a Django & React JS automated platform for discovering new potentially cybersecurity threats targeting your organisation.' \
+      documentation='https://thalesgroup-cert.github.io/Watcher/' \
+      source='https://github.com/thalesgroup-cert/Watcher' \
+      maintainer='ygalnezri@icloud.com'
 
 ENV http_proxy=${HTTP_PROXY} \
     https_proxy=${HTTPS_PROXY} \
@@ -123,7 +116,6 @@ WORKDIR /app/Watcher
 
 # Collect static files for production purpose
 RUN python manage.py collectstatic --noinput
-
 
 EXPOSE 9002
 

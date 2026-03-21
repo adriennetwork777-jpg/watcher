@@ -1,0 +1,40 @@
+# Traefik Dynamic Configuration
+# Place your dynamic routing rules here
+
+http:
+  routers:
+    # Example router configuration
+    # watcher-router:
+    #   rule: "Host(`watcher.example.com`)"
+    #   service: watcher-service
+    #   tls: {}
+    #   middlewares:
+    #     - secure-headers
+
+  services:
+    # Example service configuration
+    # watcher-service:
+    #   loadBalancer:
+    #     servers:
+    #       - url: "http://watcher:9002"
+
+  middlewares:
+    # Example middleware for security headers
+    # secure-headers:
+    #   headers:
+    #     frameDeny: true
+    #     browserXssFilter: true
+    #     contentTypeNosniff: true
+    #     stsIncludeSubdomains: true
+    #     stsPreload: true
+    #     stsSeconds: 31536000
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256

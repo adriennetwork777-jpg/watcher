@@ -1,6 +1,5 @@
 name: watcher
 services:
-
   certstream:
     container_name: certstream
     image: 0rickyy0/certstream-server-go:latest
@@ -26,7 +25,7 @@ services:
       searxng:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http:/localhost:9002/#/login | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9002/#/login | grep -q 200 || exit 1"]
       interval: 30s
       timeout: 30s
       retries: 12
@@ -39,7 +38,7 @@ services:
     image: mysql:${DB_WATCHER_VERSION}
     container_name: db_watcher
     healthcheck:
-      test: mysqladmin --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} status
+      test: ["CMD", "mysqladmin", "--user=${MYSQL_USER}", "--password=${MYSQL_PASSWORD}", "status"]
       interval: 2s
       timeout: 1s
       retries: 10
