@@ -1,5 +1,5 @@
 log:
-  level: DEBUG
+  level: INFO
   filePath: "/var/log/traefik/traefik.log"
 
 accessLog:
@@ -7,6 +7,13 @@ accessLog:
   bufferingSize: 100
 
 entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
   websecure:
     address: ":443"
     http:
@@ -14,12 +21,16 @@ entryPoints:
         options: default
 
 api:
-  dashboard: true
-  insecure: true
+  dashboard: false
+  insecure: false
 
 providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: watcher_network
   file:
-    directory: /dynamic
+    directory: /etc/traefik/dynamic
     watch: true
 
 tls:
@@ -31,7 +42,14 @@ tls:
   options:
     default:
       minVersion: VersionTLS12
-      clientAuth:
-        caFiles:
-          - /etc/private/rootcafile.pem
-        clientAuthType: VerifyIfGiven
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+      sniStrict: true

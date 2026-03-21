@@ -1,6 +1,6 @@
 #################################################
-#           WATCHER - DOCKER COMPOSE            #
-#    Production-ready stack with local build    #
+#           WATCHER - PRODUCTION DOCKER COMPOSE #
+#    Optimized for security and production use  #
 #################################################
 
 name: watcher
@@ -10,38 +10,32 @@ services:
   #              REVERSE PROXY (Traefik)          #
   #################################################
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3.5
     container_name: traefik
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
     ports:
       - "80:80"
       - "443:443"
-      # Dashboard (optional - disable in production)
-      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - ./traefik/dynamic:/dynamic:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
       - ./traefik/logs:/var/log/traefik
-      - ./traefik/certs:/etc/private:ro
-    environment:
-      - DOMAIN_CORP=${DOMAIN_CORP:-example.com}
-      - TZ=${TZ:-UTC}
+      - ./certificates:/etc/private:ro
     networks:
       - watcher_network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_CORP:-localhost}`)"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.tls=true"
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
+    depends_on: []
 
   #################################################
   #              CERTSTREAM SERVER                #
@@ -50,8 +44,11 @@ services:
     image: 0rickyy0/certstream-server-go:latest
     container_name: certstream
     restart: always
-    ports:
-      - "127.0.0.1:8080:8080"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
     volumes:
       - ./certstream-config.yaml:/app/config.yaml:ro
     environment:
@@ -78,6 +75,8 @@ services:
     container_name: searxng
     hostname: searxng
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     cap_drop:
       - ALL
     cap_add:
@@ -85,6 +84,10 @@ services:
       - SETGID
       - SETUID
       - DAC_OVERRIDE
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /etc/searxng
     volumes:
       - ./Searx/searx:/etc/searxng:rw
       - searx_data:/data
@@ -101,6 +104,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.searxng.rule=Host(`searxng.${DOMAIN_CORP:-localhost}`)"
       - "traefik.http.routers.searxng.tls=true"
+      - "traefik.http.routers.searxng.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.searxng.loadbalancer.server.port=8080"
     depends_on:
       traefik:
@@ -110,9 +114,11 @@ services:
   #              MYSQL DATABASE                   #
   #################################################
   db_watcher:
-    image: mysql:8.0
+    image: mysql:8.0.40
     container_name: db_watcher
     restart: always
+    security_opt:
+      - no-new-privileges:true
     command: >
       mysqld
       --default-authentication-plugin=mysql_native_password
@@ -120,6 +126,7 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --innodb-buffer-pool-size=512M
       --max-connections=200
+      --skip-symbolic-links
     volumes:
       - db_data:/var/lib/mysql
       - db_logs:/var/log/mysql
@@ -127,12 +134,12 @@ services:
       - TZ=${TZ:-UTC}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-db_watcher}
       - MYSQL_USER=${DB_USER:-watcher_user}
-      - MYSQL_PASSWORD=${DB_PASSWORD:-ChangeMeInProduction!}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-ChangeMeInProductionRoot!}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
     networks:
       - watcher_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "--user=${DB_USER:-watcher_user}", "--password=${DB_PASSWORD:-ChangeMeInProduction!}", "status"]
+      test: ["CMD", "mysqladmin", "--user=${DB_USER:-watcher_user}", "--password=${DB_PASSWORD}", "status"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -141,9 +148,6 @@ services:
       traefik:
         condition: service_healthy
 
-  #################################################
-  #              WATCHER APPLICATION              #
-  #################################################
   #################################################
   #              BACKEND (Django/API)             #
   #################################################
@@ -159,9 +163,13 @@ services:
         - NO_PROXY=${NO_PROXY:-}
     container_name: watcher-api
     restart: always
-    tty: true
-    ports:
-      - "127.0.0.1:9002:9002"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    expose:
+      - "9002"
     env_file:
       - .env
     environment:
@@ -170,7 +178,8 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY:-}
       - NO_PROXY=${NO_PROXY:-searxng,db_watcher,certstream,10.10.10.0/24}
       - DJANGO_SETTINGS_MODULE=Watcher.settings
-      - DEBUG=${DEBUG:-False}
+      - DEBUG=False
+      - DJANGO_DEBUG=False
     volumes:
       - backend_static:/app/backend/static
       - backend_logs:/app/backend/logs
@@ -180,6 +189,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.${DOMAIN_CORP:-localhost}`)"
       - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.api.loadbalancer.server.port=9002"
     healthcheck:
       test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9002/api/health/ | grep -q 200 || exit 1"]
@@ -208,17 +218,21 @@ services:
         - NO_PROXY=${NO_PROXY:-}
     container_name: watcher-frontend
     restart: always
+    security_opt:
+      - no-new-privileges:true
     read_only: true
     tmpfs:
       - /tmp
       - /var/cache/nginx
       - /var/run
+      - /etc/nginx/conf.d
     networks:
       - watcher_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_CORP:-localhost}`)"
       - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.middlewares=secure-headers@file,rate-limit@file,compress@file"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]

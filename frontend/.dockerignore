@@ -1,0 +1,17 @@
+node_modules/
+npm-debug.log
+yarn-error.log
+build/
+dist/
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.log
+logs/
+.DS_Store
+.idea/
+.vscode/
+coverage/
+.env
+.env.*
