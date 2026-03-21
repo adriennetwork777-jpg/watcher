@@ -144,9 +144,12 @@ services:
   #################################################
   #              WATCHER APPLICATION              #
   #################################################
-  watcher:
+  #################################################
+  #              BACKEND (Django/API)             #
+  #################################################
+  watcher-api:
     build:
-      context: ./Watcher
+      context: ./backend
       dockerfile: Dockerfile
       args:
         - PYTHON_VERSION=3.11
@@ -154,13 +157,13 @@ services:
         - HTTP_PROXY=${HTTP_PROXY:-}
         - HTTPS_PROXY=${HTTPS_PROXY:-}
         - NO_PROXY=${NO_PROXY:-}
-    container_name: watcher
+    container_name: watcher-api
     restart: always
     tty: true
     ports:
       - "127.0.0.1:9002:9002"
     env_file:
-      - ./Watcher/.env
+      - .env
     environment:
       - TZ=${TZ:-UTC}
       - HTTP_PROXY=${HTTP_PROXY:-}
@@ -169,17 +172,17 @@ services:
       - DJANGO_SETTINGS_MODULE=Watcher.settings
       - DEBUG=${DEBUG:-False}
     volumes:
-      - watcher_static:/app/Watcher/static
-      - watcher_logs:/app/Watcher/logs
+      - backend_static:/app/backend/static
+      - backend_logs:/app/backend/logs
     networks:
       - watcher_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.watcher.rule=Host(`watcher.${DOMAIN_CORP:-localhost}`)"
-      - "traefik.http.routers.watcher.tls=true"
-      - "traefik.http.services.watcher.loadbalancer.server.port=9002"
+      - "traefik.http.routers.api.rule=Host(`api.${DOMAIN_CORP:-localhost}`)"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.services.api.loadbalancer.server.port=9002"
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9002/#/login | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9002/api/health/ | grep -q 200 || exit 1"]
       interval: 30s
       timeout: 30s
       retries: 12
@@ -190,6 +193,41 @@ services:
       searxng:
         condition: service_started
       certstream:
+        condition: service_healthy
+
+  #################################################
+  #              FRONTEND (React/Nginx)           #
+  #################################################
+  watcher-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
+        - NO_PROXY=${NO_PROXY:-}
+    container_name: watcher-frontend
+    restart: always
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    networks:
+      - watcher_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_CORP:-localhost}`)"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      watcher-api:
         condition: service_healthy
 
 #################################################
@@ -213,7 +251,7 @@ volumes:
     driver: local
   searx_data:
     driver: local
-  watcher_static:
+  backend_static:
     driver: local
-  watcher_logs:
+  backend_logs:
     driver: local
