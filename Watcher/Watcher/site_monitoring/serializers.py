@@ -21,18 +21,18 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Site Serializer
 class SiteSerializer(serializers.ModelSerializer):
     misp_event_uuid = serializers.SerializerMethodField()
-    
+
     def get_misp_event_uuid(self, obj):
         return get_misp_uuid(obj.domain_name)
-        
+
     def validate_domain_name(self, value):
         from common.models import LegitimateDomain
-        
+
         extracted = tldextract.extract(value)
-        
+
         if not extracted.domain or not extracted.suffix:
             raise serializers.ValidationError("The domain name is not valid")
-        
+
         if self.instance is None:
             if LegitimateDomain.objects.filter(domain_name=value).exists():
                 raise serializers.ValidationError(
@@ -44,7 +44,7 @@ class SiteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     f'{value} Already exists in Legitimate Domains'
                 )
-        
+
         return value
 
     def to_internal_value(self, data):
@@ -86,7 +86,7 @@ class MISPSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.misp_api = PyMISP(
             settings.MISP_URL,
             settings.MISP_KEY,
@@ -101,7 +101,7 @@ class MISPSerializer(serializers.Serializer):
         try:
             site_id = data['id']
             event_uuid = data.get('event_uuid', '')
-            
+
             try:
                 site = Site.objects.get(pk=site_id)
             except Site.DoesNotExist:
@@ -120,7 +120,7 @@ class MISPSerializer(serializers.Serializer):
                     )
 
             return data
-            
+
         except Exception as e:
             raise serializers.ValidationError(f"Validation error: {str(e)}")
 
@@ -132,18 +132,18 @@ class MISPSerializer(serializers.Serializer):
             site_id = self.validated_data['id']
             event_uuid = self.validated_data.get('event_uuid')
             site = Site.objects.get(pk=site_id)
-            
+
             if event_uuid:
                 event = self.misp_api.get_event(event_uuid)
                 success, message = create_or_update_objects(
-                    self.misp_api, 
-                    event, 
+                    self.misp_api,
+                    event,
                     site
                 )
-                
+
                 if success:
                     update_misp_uuid(site.domain_name, event_uuid)
-                    
+
             else:
                 event = MISPEvent()
                 event.distribution = 0

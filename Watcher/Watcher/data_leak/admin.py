@@ -17,10 +17,10 @@ def custom_titled_filter(title):
 @admin.register(Subscriber)
 class Subscriber(admin.ModelAdmin):
     list_display = ('user_rec', 'created_at', 'email', 'thehive', 'slack', 'citadel')
-    list_filter = ('email', 'thehive', 'slack', 'citadel') 
+    list_filter = ('email', 'thehive', 'slack', 'citadel')
     search_fields = ('user_rec__username',)
     fieldsets = (
-        (None, { 
+        (None, {
             'fields': ('user_rec', 'created_at')
         }),
         ('Notification Channels', {

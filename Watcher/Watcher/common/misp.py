@@ -12,19 +12,19 @@ logger = logging.getLogger('watcher.common')
 def create_misp_tags(misp_api):
     """
     Create and verify MISP tags.
-    
+
     Args:
         misp_api: PyMISP API instance
-    
+
     Returns:
         list: Created/verified tags
     """
     required_tags = settings.MISP_TAGS
     tag_list = []
-    
+
     try:
         existing_tags = {tag.name: tag for tag in misp_api.tags(pythonify=True)}
-        
+
         for tag_name in required_tags:
             if tag_name not in existing_tags:
                 tag = MISPTag()
@@ -34,9 +34,9 @@ def create_misp_tags(misp_api):
                 tag_list.append(tag)
             else:
                 tag_list.append(existing_tags[tag_name])
-                
+
         return tag_list
-        
+
     except Exception as e:
         logger.error(f"Error creating MISP tags: {str(e)}")
         raise
@@ -45,11 +45,11 @@ def create_misp_tags(misp_api):
 def create_objects(obj, existing_values=None):
     """
     Create MISP Objects for any domain object (Site or DnsTwisted).
-    
+
     Args:
         obj: Domain object (Site or DnsTwisted) containing domain data
         existing_values: Optional set of (type, value) tuples to check for duplicates
-    
+
     Returns:
         list: MISP objects ready to be added/updated
     """
@@ -67,10 +67,10 @@ def create_objects(obj, existing_values=None):
             'object_relation': 'domain'
         }
     }
-    
+
     # Check object type and add specific attributes
     from site_monitoring.models import Site
-    
+
     if isinstance(obj, Site):
         # Site attributes
         if obj.ip:
@@ -82,7 +82,7 @@ def create_objects(obj, existing_values=None):
                 'comment': "First IP",
                 'object_relation': 'ip'
             }
-            
+
         if obj.ip_second:
             attributes_map['ip_second'] = {
                 'value': obj.ip_second,
@@ -92,7 +92,7 @@ def create_objects(obj, existing_values=None):
                 'comment': "Second IP",
                 'object_relation': 'ip'
             }
-            
+
         if obj.mail_A_record_ip:
             attributes_map['mail_ip'] = {
                 'value': obj.mail_A_record_ip,
@@ -102,7 +102,7 @@ def create_objects(obj, existing_values=None):
                 'comment': "Mail Server IP",
                 'object_relation': 'ip'
             }
-            
+
         if obj.ticket_id:
             attributes_map['ticket'] = {
                 'value': obj.ticket_id,
@@ -113,7 +113,7 @@ def create_objects(obj, existing_values=None):
                 'comment': f"{settings.THE_HIVE_CUSTOM_FIELD} reference",
                 'object_relation': 'text'
             }
-    
+
     # Add attributes to MISP object
     for attr_data in attributes_map.values():
         if not attr_data['value']:
@@ -142,12 +142,12 @@ def create_objects(obj, existing_values=None):
 def find_domain_object(misp_api, event, domain_name):
     """
     Find a domain object in a MISP event.
-    
+
     Args:
         misp_api: PyMISP API instance
         event: MISP Event object
         domain_name: Domain name to search for
-        
+
     Returns:
         tuple: (object_found, existing_object)
     """
@@ -169,9 +169,9 @@ def find_domain_object(misp_api, event, domain_name):
                         obj = misp_api.get_object(attribute.object_id, pythonify=True)
                         if obj and obj.name == 'domain-ip':
                             return True, obj
-                    
+
         return False, None
-        
+
     except Exception as e:
         logger.error(f"Error searching domain object: {str(e)}")
         raise
@@ -180,13 +180,13 @@ def find_domain_object(misp_api, event, domain_name):
 def create_or_update_objects(misp_api, event, site, dry_run=False):
     """
     Create or update MISP objects for a given site.
-    
+
     Args:
         misp_api: PyMISP API instance
         event: MISP Event object
         site: Site object containing domain data
         dry_run: If True, simulate the operation without making changes
-        
+
     Returns:
         tuple: (success, message)
     """
@@ -196,17 +196,17 @@ def create_or_update_objects(misp_api, event, site, dry_run=False):
             return False, "Invalid MISP event format - please check the event UUID"
 
         logger.info(f"Processing domain name {site.domain_name} for event {event['Event']['uuid']}")
-        
+
         domain_exists, existing_obj = find_domain_object(misp_api, event, site.domain_name)
-        
+
         if domain_exists:
             existing_values = {(attr.type, attr.value) for attr in existing_obj.attributes}
             objects = create_objects(site, existing_values)
-            
+
             if not objects:
                 logger.info(f"Already on MISP - No changes applied for {site.domain_name}")
                 return True, f"Already on MISP - No changes applied for {site.domain_name}"
-                            
+
             if not dry_run:
                 for obj in objects:
                     for attr in obj.attributes:
@@ -223,16 +223,20 @@ def create_or_update_objects(misp_api, event, site, dry_run=False):
                                 }
                             )
                             misp_api.update_object(existing_obj)
-                            logger.info(f"Updating MISP object for {site.domain_name} - Added attribute {attr.type}: {attr.value}")
+                            logger.info(
+                                f"Updating MISP object for {
+                                    site.domain_name} - Added attribute {
+                                    attr.type}: {
+                                    attr.value}")
                         except Exception as e:
                             logger.error(f"Error adding attribute to object: {str(e)}")
                             raise
-                    
+
             return True, f"Successfully updated {site.domain_name} in MISP"
-            
+
         else:
             objects = create_objects(site)
-            
+
             if not dry_run and objects:
                 for obj in objects:
                     try:
@@ -241,9 +245,9 @@ def create_or_update_objects(misp_api, event, site, dry_run=False):
                     except Exception as e:
                         logger.error(f"Error adding object: {str(e)}")
                         raise
-                    
+
             return True, f"Successfully added {site.domain_name} to MISP"
-            
+
     except Exception as e:
         logger.error(f"Error in create_or_update_objects: {str(e)}")
         return False, f"Error: {str(e)}"
@@ -252,10 +256,10 @@ def create_or_update_objects(misp_api, event, site, dry_run=False):
 def get_misp_uuid(domain_name):
     """
     Get MISP event UUID for a domain.
-    
+
     Args:
         domain_name: Domain name to get UUID for
-        
+
     Returns:
         list: List of MISP event UUID (or empty list if none found)
     """
@@ -269,17 +273,17 @@ def get_misp_uuid(domain_name):
 def update_misp_uuid(domain_name, event_uuid):
     """
     Update MISP event UUID for a domain.
-    
+
     Args:
         domain_name: Domain name to update UUID for
         event_uuid: UUID to add (will be added as the latest)
-        
+
     Returns:
         list: Updated list of MISP event UUID
     """
     try:
         mapping, created = MISPEventUuidLink.objects.get_or_create(domain_name=domain_name)
-        
+
         if not mapping.misp_event_uuid:
             mapping.misp_event_uuid = [event_uuid]
         elif event_uuid in mapping.misp_event_uuid:
@@ -290,10 +294,10 @@ def update_misp_uuid(domain_name, event_uuid):
             current_uuid = list(mapping.misp_event_uuid)
             current_uuid.append(event_uuid)
             mapping.misp_event_uuid = current_uuid
-            
+
         mapping.save()
         return mapping.misp_event_uuid
-        
+
     except Exception as e:
         logger.error(f"Error updating MISP UUID: {str(e)}")
         return []

@@ -21,10 +21,10 @@ class TrendyWordViewSet(viewsets.ModelViewSet):
             type='trendy_word_summary',
             keywords=trendy_word.name
         ).first()
-        
+
         word_data = self.get_serializer(trendy_word).data
         word_data['summary'] = SummarySerializer(summary).data if summary else None
-        
+
         return Response(word_data)
 
 
@@ -40,17 +40,17 @@ class BannedWordViewSet(viewsets.ModelViewSet):
 class SummaryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     serializer_class = SummarySerializer
-    
+
     def get_queryset(self):
         queryset = Summary.objects.all()
         summary_type = self.request.query_params.get('type', None)
         keyword = self.request.query_params.get('keyword', None)
-        
+
         if summary_type:
             queryset = queryset.filter(type=summary_type)
         if keyword:
             queryset = queryset.filter(keywords=keyword)
-        
+
         return queryset
 
     @action(detail=False, methods=['get'], url_path='by-keyword/(?P<keyword>[^/.]+)')

@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 def get_dns_finder_group_template(dns_monitored, alerts_number):
     body = f"""\
     <html>
@@ -13,7 +14,7 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                     font-family: Arial, Helvetica, sans-serif;
                     line-height: 1.6;
                 }}
-                
+
                 /* Base Styles */
                 body {{
                     background-color: #f5f7fa;
@@ -30,7 +31,7 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                     overflow: hidden;
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 }}
-                
+
                 /* Header Styles */
                 .header {{
                     background: #00267F;
@@ -39,7 +40,7 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                     border-top-left-radius: 8px;
                     border-top-right-radius: 8px;
                 }}
-                
+
                 .header h1 {{
                     color: #ffffff;
                     font-size: 28px;
@@ -48,36 +49,36 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 }}
-                
+
                 .header img {{
                     width: 80px;
                     height: auto;
                     margin-bottom: 15px;
                 }}
-                
+
                 /* Content Styles */
                 .content {{
                     padding: 40px 30px;
                 }}
-                
+
                 .content p {{
                     margin-bottom: 20px;
                     color: #4a5568;
                 }}
-                
+
                 .content a {{
                     color: #2b6cb0;
                     text-decoration: none;
                 }}
-                
+
                 .content a:hover {{
                     text-decoration: underline;
                 }}
-                
+
                 .details {{
                     background: #f3f4f6;
                     border-left: 4px solid #00267F;
-                    padding: 15px 10px 15px 10px; 
+                    padding: 15px 10px 15px 10px;
                     margin: 20px 0;
                     border-radius: 0 4px 4px 0;
                 }}
@@ -109,7 +110,7 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                     padding: 8px 15px;
                     margin-top: 10px;
                 }}
-                
+
                 .classification {{
                     text-align: center;
                     font-size: 12px;
@@ -133,7 +134,7 @@ def get_dns_finder_group_template(dns_monitored, alerts_number):
                         <p>Dear team,</p>
                         <p><strong>{alerts_number}</strong> New DNS Twisted Alerts for <strong>{dns_monitored.domain_name}</strong> asset.</p>
                         <p>You can check more details <a href="{settings.WATCHER_URL}#/dns_finder">here.</a></p>
-                        
+
                         <p>Kind Regards,<br>
                         <br><strong>Watcher</strong></p>
                     </td>

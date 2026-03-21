@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
+
 class DnsMonitored(models.Model):
     """
     Dns stored in order to find twisted related dns

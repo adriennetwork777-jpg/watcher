@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='site',
-            options={'ordering': ['-rtir'], 'verbose_name': 'Website', 'verbose_name_plural': 'Suspicious Websites Monitored'},
+            options={'ordering': ['-rtir'], 'verbose_name': 'Website',
+                     'verbose_name_plural': 'Suspicious Websites Monitored'},
         ),
     ]

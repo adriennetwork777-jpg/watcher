@@ -27,7 +27,7 @@ class Command(BaseCommand, ABC):
 
         # Init Source DB with common sources from CSV File
         with open('threats_watcher/datas/sources.csv', newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';') 
+            reader = csv.DictReader(csvfile, delimiter=';')
             for row in reader:
                 confident = int(row['confident']) if row['confident'].isdigit() else 1
                 url = row['url'].strip()

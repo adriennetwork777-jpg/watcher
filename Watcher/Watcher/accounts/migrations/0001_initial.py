@@ -17,7 +17,8 @@ class Migration(migrations.Migration):
             name='APIKey',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('auth_token', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='knox.authtoken')),
+                ('auth_token', models.OneToOneField(blank=True, null=True,
+                 on_delete=django.db.models.deletion.CASCADE, to='knox.authtoken')),
             ],
             options={
                 'verbose_name': 'API Key',

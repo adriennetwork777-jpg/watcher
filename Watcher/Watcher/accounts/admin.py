@@ -47,8 +47,7 @@ class UserFilter(FilterBase):
 
     def lookups(self, request, model_admin):
         return tuple((u.id, u.username)
-                     for u in User.objects.filter(pk__in=
-                                                  LogEntry.objects.values_list('user_id').distinct())
+                     for u in User.objects.filter(pk__in=LogEntry.objects.values_list('user_id').distinct())
                      )
 
 
@@ -131,13 +130,13 @@ class LogEntryAdmin(admin.ModelAdmin):
 
     action_description.short_description = 'Action'
 
+
 admin.site.register(LogEntry, LogEntryAdmin)
 
 
 class APIKeyForm(forms.ModelForm):
-    EXPIRATION_CHOICES = (
-        (1, '1 day'), (7, '7 days'), (30, '30 days'), (60, '60 days'), (90, '90 days'), (365, '1 year'), (730, '2 years'),
-    )
+    EXPIRATION_CHOICES = ((1, '1 day'), (7, '7 days'), (30, '30 days'), (60, '60 days'),
+                          (90, '90 days'), (365, '1 year'), (730, '2 years'), )
     expiration = forms.ChoiceField(choices=EXPIRATION_CHOICES, label='Expiration', required=True)
     user = forms.ModelChoiceField(queryset=User.objects.all(), label='User', required=True)
 
@@ -147,16 +146,16 @@ class APIKeyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
-        
+
         if not self.instance or not self.instance.pk:
             self.fields['expiration'].initial = 30
-            
+
         else:
             if 'user' in self.fields:
                 self.fields['user'].widget = forms.HiddenInput()
             if 'expiration' in self.fields:
                 self.fields['expiration'].widget = forms.HiddenInput()
-        
+
         if self.request and not self.request.user.is_superuser:
             self.fields['user'].queryset = User.objects.filter(id=self.request.user.id)
             self.fields['user'].initial = self.request.user
@@ -172,6 +171,7 @@ class APIKeyForm(forms.ModelForm):
             instance.save()
         return instance
 
+
 class APIKeyAdmin(admin.ModelAdmin):
     list_display = ('get_user', 'get_digest', 'get_created', 'get_expiry')
     form = APIKeyForm
@@ -184,10 +184,12 @@ class APIKeyAdmin(admin.ModelAdmin):
         return obj.auth_token.digest if obj.auth_token else None
 
     def get_created(self, obj):
-        return obj.auth_token.created.strftime("%b %d, %Y, %-I:%M %p").replace('AM', 'a.m.').replace('PM', 'p.m.') if obj.auth_token else None
+        return obj.auth_token.created.strftime("%b %d, %Y, %-I:%M %p").replace('AM',
+                                                                               'a.m.').replace('PM', 'p.m.') if obj.auth_token else None
 
     def get_expiry(self, obj):
-        return obj.auth_token.expiry.strftime("%b %d, %Y, %-I:%M %p").replace('AM', 'a.m.').replace('PM', 'p.m.') if obj.auth_token else None
+        return obj.auth_token.expiry.strftime("%b %d, %Y, %-I:%M %p").replace('AM',
+                                                                              'a.m.').replace('PM', 'p.m.') if obj.auth_token else None
 
     get_user.short_description = 'User'
     get_digest.short_description = 'Digest'
@@ -206,7 +208,7 @@ class APIKeyAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         kwargs['form'] = self.form
         form = super().get_form(request, obj, **kwargs)
-        
+
         class CustomAPIKeyForm(form):
             def __init__(self, *args, **kwargs):
                 kwargs['request'] = request
@@ -256,7 +258,12 @@ class APIKeyAdmin(admin.ModelAdmin):
                 }}
                 </style>
             '''
-            messages.success(request, mark_safe(f"The API Key was added successfully: {raw_key}. {copy_button} Make sure to copy this personal token now. You won't be able to see it again!"), extra_tags='safe', fail_silently=True)
+            messages.success(
+                request,
+                mark_safe(
+                    f"The API Key was added successfully: {raw_key}. {copy_button} Make sure to copy this personal token now. You won't be able to see it again!"),
+                extra_tags='safe',
+                fail_silently=True)
         else:
             super().save_model(request, obj, form, change)
 
@@ -287,6 +294,7 @@ class APIKeyAdmin(admin.ModelAdmin):
 
     key_details.short_description = 'Key Details'
 
+
 admin.site.register(APIKey, APIKeyAdmin)
 
 
@@ -302,9 +310,10 @@ def delete_authtoken_when_apikey_deleted(sender, instance, **kwargs):
 class AuthTokenAdmin(admin.ModelAdmin):
     list_display = ('user', 'digest', 'created', 'expiry')
     readonly_fields = ('user', 'digest', 'created', 'expiry')
- 
+
     def has_add_permission(self, request):
         return False
- 
+
+
 admin.site.unregister(AuthToken)
 admin.site.register(AuthToken, AuthTokenAdmin)

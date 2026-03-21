@@ -1,5 +1,4 @@
 services:
-
   certstream:
     init: true
     ports:
@@ -13,7 +12,7 @@ services:
       HTTPS_PROXY: "${HTTPS_PROXY}"
     networks:
       - watcher_network
-  
+
   watcher:
     init: true
     ports:

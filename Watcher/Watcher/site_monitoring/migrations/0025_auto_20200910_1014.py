@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='alert',
             name='new_MX_records',
-            field=django_mysql.models.ListCharField(models.CharField(max_length=100), blank=True, max_length=1010, null=True, size=10),
+            field=django_mysql.models.ListCharField(models.CharField(
+                max_length=100), blank=True, max_length=1010, null=True, size=10),
         ),
         migrations.AddField(
             model_name='alert',
@@ -24,7 +25,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='alert',
             name='old_MX_records',
-            field=django_mysql.models.ListCharField(models.CharField(max_length=100), blank=True, max_length=1010, null=True, size=10),
+            field=django_mysql.models.ListCharField(models.CharField(
+                max_length=100), blank=True, max_length=1010, null=True, size=10),
         ),
         migrations.AddField(
             model_name='alert',

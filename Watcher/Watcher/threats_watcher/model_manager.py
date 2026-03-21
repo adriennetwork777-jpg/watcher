@@ -15,7 +15,7 @@ _summarizer_model = None
 def get_ner_pipeline():
     """
     Load and return Named Entity Recognition pipeline.
-    
+
     Uses dslim/bert-base-NER with grouped entities for:
         - Person names (PER)
         - Organizations (ORG)
@@ -40,10 +40,10 @@ def get_ner_pipeline():
 def get_summarizer_pipeline():
     """
     Load and return text generation pipeline (legacy compatibility).
-    
+
     Uses google/flan-t5-base for text-to-text generation tasks.
     Kept for backward compatibility with breaking news generation.
-    
+
     For full control over generation parameters, use get_summarizer_model() instead.
     """
     global _summarizer_pipeline
@@ -78,7 +78,7 @@ def get_summarizer_tokenizer():
 def get_summarizer_model():
     """
     Load and return FLAN-T5 model with tokenizer for advanced generation.
-    
+
     Provides direct access to model.generate() for:
         - Fine-grained control over generation parameters
         - Custom beam search settings

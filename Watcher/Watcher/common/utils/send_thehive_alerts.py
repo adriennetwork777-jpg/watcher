@@ -41,13 +41,25 @@ def post_to_thehive(url, data, headers, proxies):
     """
     try:
         response = requests.post(url, headers=headers, json=data, verify=False, proxies=proxies)
-        response.raise_for_status()  
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         return None
 
 
-def send_thehive_alert(title, description, severity, tlp, pap, tags, app_name, domain_name, observables=None, customFields=None, thehive_url=None, api_key=None):
+def send_thehive_alert(
+        title,
+        description,
+        severity,
+        tlp,
+        pap,
+        tags,
+        app_name,
+        domain_name,
+        observables=None,
+        customFields=None,
+        thehive_url=None,
+        api_key=None):
     from common.core import generate_ref
     """
     Send or update an alert in TheHive based on the application and ticket_id.
@@ -85,12 +97,12 @@ def send_thehive_alert(title, description, severity, tlp, pap, tags, app_name, d
 
     if app_name == 'website_monitoring' and domain_name:
         site = Site.objects.get(domain_name=domain_name)
-        site.ticket_id = ticket_id 
+        site.ticket_id = ticket_id
         site.save()
 
     if app_name == 'website_monitoring' and not ticket_id:
         return
-    
+
     current_time = timezone.now().strftime("%H:%M:%S")
     current_date = timezone.now().strftime("%d/%m/%y")
 
@@ -118,7 +130,7 @@ def send_thehive_alert(title, description, severity, tlp, pap, tags, app_name, d
 
     elif app_name != 'dns_finder':
         create_new_alert(
-            ticket_id=ticket_id, 
+            ticket_id=ticket_id,
             title=title,
             description=description,
             severity=severity,
@@ -135,4 +147,3 @@ def send_thehive_alert(title, description, severity, tlp, pap, tags, app_name, d
             thehive_url=thehive_url,
             api_key=api_key
         )
-        

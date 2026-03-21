@@ -48,11 +48,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dnstwisted',
             name='dns_monitored',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='dns_finder.dnsmonitored'),
+            field=models.ForeignKey(blank=True, null=True,
+                                    on_delete=django.db.models.deletion.CASCADE, to='dns_finder.dnsmonitored'),
         ),
         migrations.AddField(
             model_name='dnstwisted',
             name='keyword_monitored',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='dns_finder.keywordmonitored'),
+            field=models.ForeignKey(blank=True, null=True,
+                                    on_delete=django.db.models.deletion.CASCADE, to='dns_finder.keywordmonitored'),
         ),
     ]

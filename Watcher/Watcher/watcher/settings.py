@@ -81,7 +81,7 @@ WORDS_OCCURRENCE = 5
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('SMTP_SERVER', '') 
+EMAIL_HOST = os.environ.get('SMTP_SERVER', '')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 25))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', False)
 if EMAIL_USE_TLS == "True":
@@ -93,9 +93,9 @@ if EMAIL_USE_SSL == "True":
     EMAIL_USE_SSL = True
 if EMAIL_USE_SSL == "False":
     EMAIL_USE_SSL = False
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '') 
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  
-EMAIL_FROM = os.environ.get('EMAIL_FROM', '')  
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_FROM = os.environ.get('EMAIL_FROM', '')
 SUBJECT_TAG_SITE_MONITORING = os.environ.get('SUBJECT_TAG_SITE_MONITORING', 'INCIDENT')
 # Display at the end of the email notification
 EMAIL_CLASSIFICATION = os.environ.get('EMAIL_CLASSIFICATION', 'Internal')
@@ -183,8 +183,8 @@ REST_FRAMEWORK = {
 }
 
 REST_KNOX = {
-  'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA3_512',  
-  'TOKEN_TTL': timedelta(hours=10),
+    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA3_512',
+    'TOKEN_TTL': timedelta(hours=10),
 }
 
 MIDDLEWARE = [
@@ -348,7 +348,7 @@ LOGGING = {
     },
     "loggers": {
         'watcher.common': {
-            'handlers': ['file_common', 'console'], 
+            'handlers': ['file_common', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },

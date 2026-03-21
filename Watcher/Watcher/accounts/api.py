@@ -42,5 +42,5 @@ class PasswordChangeViewSet(viewsets.ModelViewSet):
 def generate_api_key(user, expiration):
     expiry = timezone.timedelta(days=expiration)
     token_instance, raw_key = AuthToken.objects.create(user=user, expiry=expiry)
-    
+
     return raw_key, token_instance

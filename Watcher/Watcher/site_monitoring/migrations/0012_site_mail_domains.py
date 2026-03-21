@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='site',
             name='mail_domains',
-            field=django_mysql.models.ListCharField(models.CharField(max_length=100), blank=True, max_length=1010, null=True, size=10),
+            field=django_mysql.models.ListCharField(models.CharField(
+                max_length=100), blank=True, max_length=1010, null=True, size=10),
         ),
     ]

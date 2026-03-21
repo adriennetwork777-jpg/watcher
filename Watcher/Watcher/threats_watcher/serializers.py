@@ -27,6 +27,8 @@ class BannedWordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # Summary Serializer
+
+
 class SummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Summary

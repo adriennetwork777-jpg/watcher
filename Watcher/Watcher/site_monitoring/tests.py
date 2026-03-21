@@ -11,9 +11,10 @@ from site_monitoring.core import monitoring_init, create_rdap_alert, send_websit
 from site_monitoring.serializers import SiteSerializer, AlertSerializer
 import uuid
 
+
 class ModelTest(TestCase):
     """Test all models."""
-    
+
     def test_site_model_functionality(self):
         """Test site creation, RTIR, constraints, and relationships."""
         site = Site.objects.create(
@@ -31,13 +32,13 @@ class ModelTest(TestCase):
         self.assertTrue(site.ip_monitoring)
         self.assertFalse(site.monitored)
         self.assertEqual(str(site), "test-example.com")
-        
+
         site2 = Site.objects.create(domain_name="site2.com")
         self.assertEqual(site2.rtir, site.rtir + 1)
-        
+
         with self.assertRaises(Exception):
             Site.objects.create(domain_name="test-example.com")
-    
+
     def test_legitimacy_auto_update(self):
         """Test automatic legitimacy update when registrar is found."""
         site = Site.objects.create(
@@ -48,7 +49,7 @@ class ModelTest(TestCase):
         updated = site.auto_update_legitimacy_on_registration()
         self.assertTrue(updated)
         self.assertEqual(site.legitimacy, 3)
-    
+
     def test_alert_model_functionality(self):
         """Test alert creation, relationships, and cascade delete."""
         site = Site.objects.create(domain_name="alert-test.com")
@@ -65,12 +66,12 @@ class ModelTest(TestCase):
         self.assertTrue(alert.status)
         self.assertFalse(alert.is_rdap_alert)
         self.assertIn("alert-test.com", str(alert))
-        
+
         site_id, alert_id = site.id, alert.id
         site.delete()
         self.assertFalse(Site.objects.filter(id=site_id).exists())
         self.assertFalse(Alert.objects.filter(id=alert_id).exists())
-    
+
     def test_rdap_alert_detection(self):
         """Test RDAP/WHOIS alert detection."""
         site = Site.objects.create(domain_name="rdap-test.com")
@@ -87,7 +88,7 @@ class ModelTest(TestCase):
             old_registrar="Old Registrar"
         )
         self.assertTrue(rdap_alert.is_rdap_alert)
-    
+
     def test_subscriber_functionality(self):
         """Test subscriber creation and defaults."""
         user = User.objects.create_user("testuser", "test@test.com", "pass")
@@ -164,7 +165,7 @@ class CoreFunctionsTest(TestCase):
 
 class APITest(APITestCase):
     """Test all API endpoints."""
-    
+
     def setUp(self):
         self.user = User.objects.create_superuser("apiuser", password="apipass123")
         self.token = AuthToken.objects.create(self.user)[1]
@@ -176,7 +177,7 @@ class APITest(APITestCase):
             legitimacy=2
         )
         self.alert = Alert.objects.create(site=self.site, type="API test alert")
-    
+
     def test_site_api_operations(self):
         """Test Site CRUD operations via API."""
         response = self.client.get('/api/site_monitoring/site/')
@@ -192,7 +193,7 @@ class APITest(APITestCase):
         response = self.client.patch(f'/api/site_monitoring/site/{self.site.pk}/', update_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['legitimacy'], 3)
-    
+
     def test_alert_api_operations(self):
         """Test Alert API operations."""
         response = self.client.get('/api/site_monitoring/alert/')
@@ -220,7 +221,7 @@ class APITest(APITestCase):
 
 class RDAPWhoisTest(TestCase):
     """Test RDAP and WHOIS functionality."""
-    
+
     @patch('site_monitoring.core.RDAPDiscovery')
     def test_rdap_lookup(self, mock_rdap):
         """Test RDAP lookup."""
@@ -235,7 +236,7 @@ class RDAPWhoisTest(TestCase):
         self.assertTrue(result)
         site.refresh_from_db()
         self.assertEqual(site.registrar, "RDAP Registrar")
-    
+
     @patch('site_monitoring.core.WhoisDiscovery')
     def test_whois_fallback(self, mock_whois):
         """Test WHOIS fallback when RDAP fails."""
@@ -252,7 +253,7 @@ class RDAPWhoisTest(TestCase):
 
 class IntegrationTest(TransactionTestCase):
     """Integration and workflow tests."""
-    
+
     def setUp(self):
         self.user = User.objects.create_user("integ_user", "test@test.com", "pass")
         Subscriber.objects.create(user_rec=self.user, email=True)
@@ -283,7 +284,7 @@ class IntegrationTest(TransactionTestCase):
         alert = mock_alert_create.return_value
         self.assertIsNotNone(alert)
         self.assertEqual(alert.new_ip, "192.168.1.2")
-    
+
     def test_site_deletion_signal(self):
         """Test site deletion removes MISP mapping."""
         from common.models import MISPEventUuidLink
@@ -299,17 +300,17 @@ class IntegrationTest(TransactionTestCase):
 
 class PerformanceAndSecurityTest(TestCase):
     """Test performance and security features."""
-    
+
     def test_bulk_operations_performance(self):
         """Test bulk site operations."""
         start_time = timezone.now()
-        sites = [Site(domain_name=f"perf-{i}.com", rtir=i+1) for i in range(10)]
+        sites = [Site(domain_name=f"perf-{i}.com", rtir=i + 1) for i in range(10)]
         Site.objects.bulk_create(sites)
         end_time = timezone.now()
         duration = (end_time - start_time).total_seconds()
         self.assertLess(duration, 2.0)
         self.assertEqual(Site.objects.filter(domain_name__startswith="perf-").count(), 10)
-    
+
     def test_input_validation_and_security(self):
         """Test input validation."""
         site = Site.objects.create(domain_name="valid-domain.com")

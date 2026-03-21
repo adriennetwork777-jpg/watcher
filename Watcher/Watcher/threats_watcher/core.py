@@ -45,6 +45,7 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9"
 }
 
+
 def extract_entities_and_threats(title: str) -> dict:
     """Extract and clean entities and threats from title using NER model."""
     ner_pipe = get_ner_pipeline()
@@ -58,21 +59,21 @@ def extract_entities_and_threats(title: str) -> dict:
             "cves": [],
             "attackers": [],
         }
-    
+
     ner_results = ner_pipe(title)
 
-    persons       = set()
+    persons = set()
     organizations = set()
-    locations     = set()
-    products      = set()
+    locations = set()
+    products = set()
 
     # Common noise words to exclude
     common_noise = ['the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'has', 'have']
 
     for ent in ner_results:
-        grp  = ent["entity_group"]
+        grp = ent["entity_group"]
         text = ent["word"]
-        
+
         # Skip subword tokens (BERT artifacts)
         if text.startswith('##'):
             continue
@@ -85,7 +86,7 @@ def extract_entities_and_threats(title: str) -> dict:
         # Skip common noise words
         if text.lower() in common_noise:
             continue
-        
+
         if grp == "PER":
             persons.add(text)
         elif grp == "ORG":
@@ -96,7 +97,8 @@ def extract_entities_and_threats(title: str) -> dict:
             locations.add(text)
         elif grp == "MISC":
             for token in text.split():
-                if not token.startswith('##') and len(token) > 2 and not token.isdigit() and (token[0].isupper() or token.isupper()):
+                if not token.startswith('##') and len(token) > 2 and not token.isdigit() and (
+                        token[0].isupper() or token.isupper()):
                     products.add(token)
 
     cves = re.findall(r"\bCVE-\d{4}-\d{4,7}\b", title)
@@ -106,12 +108,12 @@ def extract_entities_and_threats(title: str) -> dict:
         attackers += re.findall(pat, title)
 
     return {
-        "persons":       list(persons),
+        "persons": list(persons),
         "organizations": list(organizations),
-        "locations":     list(locations),
-        "product":       list(products),
-        "cves":          list(set(cves)),
-        "attackers":     list(set(attackers)),
+        "locations": list(locations),
+        "product": list(products),
+        "cves": list(set(cves)),
+        "attackers": list(set(attackers)),
     }
 
 
@@ -140,11 +142,17 @@ def start_scheduler():
         hour, minute = map(int, settings.WEEKLY_SUMMARY_HOUR.split(':'))
     except Exception:
         pass
-    
-    scheduler.add_job(generate_weekly_summary,'cron', day_of_week=day, hour=hour, minute=minute, id='weekly_summary_job', 
-                      max_instances=1, replace_existing=True
-    )
-    
+
+    scheduler.add_job(
+        generate_weekly_summary,
+        'cron',
+        day_of_week=day,
+        hour=hour,
+        minute=minute,
+        id='weekly_summary_job',
+        max_instances=1,
+        replace_existing=True)
+
     scheduler.start()
 
 
@@ -172,7 +180,7 @@ def main_watch():
         - focus_five_letters()
         - focus_on_top(settings.WORDS_OCCURRENCE)
         - send_threats_watcher_notifications()
-        
+
     """
     close_old_connections()
     logger.info("CRON TASK : Main function")
@@ -193,10 +201,9 @@ def main_watch():
     send_threats_watcher_notifications(email_words)
 
 
-
 def get_confidence_score(confidence):
     """
-    Converts a confidence level (1, 2 or 3) to a percentage.   
+    Converts a confidence level (1, 2 or 3) to a percentage.
     """
     return {1: 100, 2: 50, 3: 20}.get(confidence, 0)
 
@@ -252,7 +259,8 @@ def fetch_last_posts(nb_max_post):
                     except Exception:
                         dt = "no-date"
                 link = entry.get('link') or entry.get('guid') or entry.get('id') or None
-                title_raw = entry.get('title') or entry.get('summary') or entry.get('description') or (entry.get('guid') if isinstance(entry.get('guid'), str) else None) or link or ""
+                title_raw = entry.get('title') or entry.get('summary') or entry.get('description') or (
+                    entry.get('guid') if isinstance(entry.get('guid'), str) else None) or link or ""
                 title_clean = re.sub(r'<[^>]+>', '', title_raw).replace(u'\xa0', u' ').strip()
                 if link and title_clean:
                     tmp_posts[title_clean] = link
@@ -270,11 +278,11 @@ def tokenize_count_urls():
     """
     global posts_words, wordurl
     posts_words = {}
-    wordurl     = {}
+    wordurl = {}
 
     threshold = timezone.now() - timedelta(days=30)
     ner_pipe = get_ner_pipeline()
-    
+
     if not ner_pipe:
         logger.error("NER pipeline not available for tokenization")
         return
@@ -288,7 +296,7 @@ def tokenize_count_urls():
             ent['score'] = float(ent['score'])
         ents = extract_entities_and_threats(title)
         retained = (
-              ents["persons"]
+            ents["persons"]
             + ents["organizations"]
             + ents["locations"]
             + ents["product"]
@@ -302,6 +310,7 @@ def tokenize_count_urls():
                 wordurl[key] += ", " + url
             else:
                 wordurl[key] = url
+
 
 def remove_banned_words():
     """
@@ -339,13 +348,14 @@ def remove_banned_words():
 
         # Remove domain name
         domain_extensions = [
-        ".com", ".org", ".net", ".edu", ".gov", ".mil", 
-        ".biz", ".info", ".name", ".pro", ".coop", ".museum", ".aero", ".int", ".jobs", ".mobi", ".tel", ".travel", 
-        ".fr", ".uk", ".de", ".jp", ".cn", ".it", ".us", ".es", ".ca", ".au", ".nl", ".ru", ".br", ".pl", ".in", ".be", ".ch", ".se", ".mx", ".at", ".dk", ".no", ".fi", ".ie", ".nz", ".sg", ".hk", ".my", ".za", ".ar", ".tw", ".kr", ".vn", ".tr", ".ua", ".gr", ".pt", ".cz", ".hu", ".cl", ".ro", ".id", ".il", ".co", ".ae", ".th", ".sk", ".bg", ".ph", ".hr", ".lt", ".si", ".lv", ".ee", ".rs", ".is", ".ir", ".sa", ".pe", ".ma", ".by", ".gt", ".do", ".ng", ".cr", ".ve", ".ec", ".py", ".sv", ".hn", ".pa", ".bo", ".kz", ".lu", ".uy", ".dz", ".uz", ".ke", ".np", ".kh", ".zm", ".ug", ".cy", ".mm", ".et", ".ni", ".al", ".kg", ".bd", ".tn", ".np", ".la", ".gh", ".iq", ".bj", ".gm", ".tg", ".lk", ".jo", ".zw", ".sn", ".km", ".mw", ".md", ".mr", ".tn", ".bf", ".bi", ".sc", ".er", ".sl", ".cf", ".ss", ".td", ".cg", ".gq", ".dj", ".rw", ".so", ".ne", ".yt", ".re", ".pm", ".wf", ".tf", ".gs", ".ai", ".aw", ".bb", ".bm", ".vg", ".ky", ".fk", ".fo", ".gl", ".gp", ".gg", ".gi", ".je", ".im", ".mq", ".ms", ".nc", ".pf", ".pn", ".sh", ".sb", ".gs", ".tc", ".tk", ".vg", ".vi", ".um", ".cx", ".cc", ".ac", ".eu", ".ad", ".ax", ".gg", ".gi", ".im", ".je", ".mc", ".me", ".sm", ".va", ".rs", ".ps", ".asia", ".cat", ".coop", ".jobs", ".mobi", ".tel", ".travel"  # Domaines de premier niveau géographiques (ccTLD)
+            ".com", ".org", ".net", ".edu", ".gov", ".mil",
+            ".biz", ".info", ".name", ".pro", ".coop", ".museum", ".aero", ".int", ".jobs", ".mobi", ".tel", ".travel",
+            # Domaines de premier niveau géographiques (ccTLD)
+            ".fr", ".uk", ".de", ".jp", ".cn", ".it", ".us", ".es", ".ca", ".au", ".nl", ".ru", ".br", ".pl", ".in", ".be", ".ch", ".se", ".mx", ".at", ".dk", ".no", ".fi", ".ie", ".nz", ".sg", ".hk", ".my", ".za", ".ar", ".tw", ".kr", ".vn", ".tr", ".ua", ".gr", ".pt", ".cz", ".hu", ".cl", ".ro", ".id", ".il", ".co", ".ae", ".th", ".sk", ".bg", ".ph", ".hr", ".lt", ".si", ".lv", ".ee", ".rs", ".is", ".ir", ".sa", ".pe", ".ma", ".by", ".gt", ".do", ".ng", ".cr", ".ve", ".ec", ".py", ".sv", ".hn", ".pa", ".bo", ".kz", ".lu", ".uy", ".dz", ".uz", ".ke", ".np", ".kh", ".zm", ".ug", ".cy", ".mm", ".et", ".ni", ".al", ".kg", ".bd", ".tn", ".np", ".la", ".gh", ".iq", ".bj", ".gm", ".tg", ".lk", ".jo", ".zw", ".sn", ".km", ".mw", ".md", ".mr", ".tn", ".bf", ".bi", ".sc", ".er", ".sl", ".cf", ".ss", ".td", ".cg", ".gq", ".dj", ".rw", ".so", ".ne", ".yt", ".re", ".pm", ".wf", ".tf", ".gs", ".ai", ".aw", ".bb", ".bm", ".vg", ".ky", ".fk", ".fo", ".gl", ".gp", ".gg", ".gi", ".je", ".im", ".mq", ".ms", ".nc", ".pf", ".pn", ".sh", ".sb", ".gs", ".tc", ".tk", ".vg", ".vi", ".um", ".cx", ".cc", ".ac", ".eu", ".ad", ".ax", ".gg", ".gi", ".im", ".je", ".mc", ".me", ".sm", ".va", ".rs", ".ps", ".asia", ".cat", ".coop", ".jobs", ".mobi", ".tel", ".travel"
         ]
         if any(word.endswith(ext) for ext in domain_extensions):
             word = ""
-        
+
         # Remove special characters
         word = word.encode("latin1", errors="ignore").decode("utf-8", errors="ignore")
 
@@ -386,7 +396,7 @@ def focus_on_top(words_occurrence):
     email_words = list()
     new_posts = dict()
     words_to_summarize = []
-    
+
     breaking_threshold = settings.BREAKING_NEWS_THRESHOLD
 
     for word, occurrences in posts_five_letters.items():
@@ -400,7 +410,7 @@ def focus_on_top(words_occurrence):
                                     trendy_word = TrendyWord.objects.get(name=word)
                                     trendy_word.occurrences += 1
                                     trendy_word.save()
-                                    
+
                                     if date != "no-date":
                                         PostUrl.objects.create(url=posturl, created_at=date)
                                     else:
@@ -409,7 +419,7 @@ def focus_on_top(words_occurrence):
                                     if post_url:
                                         trendy_word.posturls.add(post_url)
                                     new_posts[word] = new_posts.get(word, 0) + 1
-                                    
+
                                     # Add to summary queue if it has enough posts and no recent summary
                                     if trendy_word.posturls.count() >= 3:
                                         last_24h = timezone.now() - timedelta(hours=24)
@@ -420,7 +430,7 @@ def focus_on_top(words_occurrence):
                                         ).exists()
                                         if not has_recent_summary and trendy_word.id not in words_to_summarize:
                                             words_to_summarize.append(trendy_word.id)
-                                    
+
                                     # Check for breaking news threshold
                                     if trendy_word.occurrences >= breaking_threshold:
                                         # Check if we already sent breaking news recently (last 24h)
@@ -430,9 +440,11 @@ def focus_on_top(words_occurrence):
                                             keywords=word,
                                             created_at__gte=last_24h
                                         ).exists()
-                                        
+
                                         if not recent_breaking:
-                                            logger.info(f"Breaking news threshold reached for '{word}' ({trendy_word.occurrences} occurrences)")
+                                            logger.info(
+                                                f"Breaking news threshold reached for '{word}' ({
+                                                    trendy_word.occurrences} occurrences)")
                                             generate_breaking_news(trendy_word)
                 except KeyError:
                     pass
@@ -454,19 +466,19 @@ def focus_on_top(words_occurrence):
 
                     email_words.append(
                         "<a href=" + settings.WATCHER_URL + ">" + word + "</a> :<b> " + str(occurrences) + "</b>")
-                    
+
                     # Add newly created word to summary queue if it has enough posts
                     if word_db.posturls.count() >= 3:
                         words_to_summarize.append(word_db.id)
-                    
+
                     # Check for breaking news on new words
                     if occurrences >= breaking_threshold:
                         logger.info(f"New word '{word}' reached breaking news threshold ({occurrences} occurrences)")
                         generate_breaking_news(word_db)
-                        
+
                 except KeyError:
                     pass
-    
+
     # Generate summaries for all words in queue
     if words_to_summarize:
         logger.info(f"Generating summaries for {len(words_to_summarize)} words: {words_to_summarize}")

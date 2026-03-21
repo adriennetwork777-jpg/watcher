@@ -124,7 +124,8 @@ def is_duplicate_summary(summary: str, existing_summaries: List[str], threshold:
         norm_existing = normalize_text(existing)
         similarity = difflib.SequenceMatcher(None, norm_summary, norm_existing).ratio()
         if similarity >= threshold:
-            logger.debug(f"Duplicate detected (similarity={similarity:.2f}): '{summary[:80]}...' vs '{existing[:80]}...'")
+            logger.debug(
+                f"Duplicate detected (similarity={similarity:.2f}): '{summary[:80]}...' vs '{existing[:80]}...'")
             return True
     return False
 
@@ -152,7 +153,7 @@ def is_english(text: str, threshold: float = 0.80) -> bool:
 
         spanish_markers = [" el ", " la ", " los ", " una ", " de ", " y ", " con ", " está ", " para "]
         french_markers = [" le ", " la ", " les ", " un ", " une ", " avec ", " est ", " pour "]
-    
+
         spanish_count = sum(1 for marker in spanish_markers if marker in txt)
         french_count = sum(1 for marker in french_markers if marker in txt)
 
@@ -182,10 +183,10 @@ def clean_attribution_text(text: str) -> str:
         r"\[Continue reading\]",
         r"\[Read more\.\.\.\]",
     ]
-    
+
     for pattern in patterns:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE)
-    
+
     return text.strip()
 
 
@@ -193,13 +194,13 @@ def deduplicate_titles(titles: List[str]) -> List[str]:
     """Remove duplicate titles using normalized comparison."""
     seen_normalized = set()
     unique_titles = []
-    
+
     for title in titles:
         normalized = normalize_text(title)
         if normalized not in seen_normalized and len(normalized) > 10:
             seen_normalized.add(normalized)
             unique_titles.append(title)
-    
+
     return unique_titles
 
 
@@ -274,7 +275,8 @@ def get_article_title_or_summary(posturl_obj):
 
     # 2) JSON-LD extraction via regex
     try:
-        json_ld_blocks = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html_text, flags=re.I | re.S)
+        json_ld_blocks = re.findall(
+            r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html_text, flags=re.I | re.S)
         for block in json_ld_blocks:
             try:
                 data = json.loads(block.strip())
@@ -283,7 +285,7 @@ def get_article_title_or_summary(posturl_obj):
                     start = block.find('{')
                     end = block.rfind('}')
                     if start != -1 and end != -1 and end > start:
-                        data = json.loads(block[start:end+1])
+                        data = json.loads(block[start:end + 1])
                     else:
                         continue
                 except Exception:
@@ -433,7 +435,8 @@ def extract_entities_and_threats(title: str) -> dict:
             locations.add(text)
         elif grp == "MISC":
             for token in text.split():
-                if not token.startswith('##') and len(token) > 2 and not token.isdigit() and (token[0].isupper() or token.isupper()):
+                if not token.startswith('##') and len(token) > 2 and not token.isdigit() and (
+                        token[0].isupper() or token.isupper()):
                     products.add(token)
 
     cves = extract_and_normalize_cves(title)
@@ -574,8 +577,10 @@ def generate_weekly_summary():
 
                     try:
                         summarizer_model = get_summarizer_model()[0]
-                        outputs = summarizer_model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
-                        generated = get_summarizer_model()[1].decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+                        outputs = summarizer_model.generate(
+                            input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
+                        generated = get_summarizer_model()[1].decode(
+                            outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
                     except Exception:
                         summarizer = get_summarizer_pipeline()
                         if summarizer:
@@ -583,11 +588,13 @@ def generate_weekly_summary():
                             if isinstance(res, list) and res:
                                 first = res[0]
                                 if isinstance(first, dict):
-                                    generated = first.get('generated_text') or first.get('summary_text') or first.get('text') or ""
+                                    generated = first.get('generated_text') or first.get(
+                                        'summary_text') or first.get('text') or ""
                                 elif isinstance(first, str):
                                     generated = first
                             elif isinstance(res, dict):
-                                generated = res.get('generated_text') or res.get('summary_text') or res.get('text') or ""
+                                generated = res.get('generated_text') or res.get(
+                                    'summary_text') or res.get('text') or ""
                             else:
                                 generated = str(res)
                         else:
@@ -683,7 +690,8 @@ def generate_weekly_summary():
         logger.error(f"Weekly summary generation failed: {e}", exc_info=True)
         from .core import send_threats_watcher_notifications
         try:
-            send_threats_watcher_notifications({'summary_text': "Weekly threat analysis failed due to technical issue."})
+            send_threats_watcher_notifications(
+                {'summary_text': "Weekly threat analysis failed due to technical issue."})
         except Exception:
             logger.exception("Failed to send failure notification")
     finally:
@@ -697,7 +705,8 @@ def generate_weekly_summary():
 
 def generate_breaking_news(trendy_word):
     """Generate a breaking-news style alert for a TrendyWord."""
-    logger.info(f"Generating breaking news for '{trendy_word.name}' ({getattr(trendy_word, 'occurrences', 'n/a')} occurrences)")
+    logger.info(
+        f"Generating breaking news for '{trendy_word.name}' ({getattr(trendy_word, 'occurrences', 'n/a')} occurrences)")
     summarizer = get_summarizer_pipeline()
     tokenizer = get_summarizer_tokenizer()
 
@@ -741,8 +750,7 @@ def generate_breaking_news(trendy_word):
         pre_prompt = (
             "Produce a single short paragraph (1-3 short sentences, 15-70 words) summarizing the cybersecurity news below. "
             "Only provide factual information. Do NOT output questions, instructions, repeated lines, placeholders, or prompts like 'Identify the'. "
-            "Be specific about affected products, impact and CVEs. End with a single period.\n\n"
-        )
+            "Be specific about affected products, impact and CVEs. End with a single period.\n\n")
         full_input = pre_prompt + corpus
 
         max_input_tokens = getattr(settings, "THREATS_WATCHER_MAX_INPUT_TOKENS", 1024)
@@ -795,11 +803,13 @@ def generate_breaking_news(trendy_word):
         for attempt in range(2):
             prompt = full_input
             if attempt == 1:
-                prompt = ("IMPORTANT: Do NOT output instructions, questions, or placeholders. Produce 1-2 factual sentences only.\n\n" + full_input)
+                prompt = (
+                    "IMPORTANT: Do NOT output instructions, questions, or placeholders. Produce 1-2 factual sentences only.\n\n" +
+                    full_input)
             try:
                 result = summarizer(prompt, max_length=max_len, min_length=min_len, truncation=True, do_sample=False)
             except Exception as e:
-                logger.warning(f"Summarizer pipeline error for '{trendy_word.name}' on attempt {attempt+1}: {e}")
+                logger.warning(f"Summarizer pipeline error for '{trendy_word.name}' on attempt {attempt + 1}: {e}")
                 result = None
 
             candidate = _extract_summary_from_result(result)
@@ -824,7 +834,8 @@ def generate_breaking_news(trendy_word):
                             "length_penalty": 0.9,
                         }
                         try:
-                            outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
+                            outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get(
+                                "attention_mask"), **gen_kwargs)
                         except RuntimeError as e:
                             if "out of memory" in str(e).lower():
                                 try:
@@ -833,10 +844,12 @@ def generate_breaking_news(trendy_word):
                                     pass
                                 gen_kwargs["max_new_tokens"] = 80
                                 gen_kwargs["num_beams"] = 2
-                                outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
+                                outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get(
+                                    "attention_mask"), **gen_kwargs)
                             else:
                                 raise
-                        summary_raw = model_tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True).strip()
+                        summary_raw = model_tokenizer.decode(
+                            outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True).strip()
             except Exception as e:
                 logger.warning(f"Model.generate fallback failed for '{trendy_word.name}': {e}")
                 summary_raw = None
@@ -966,7 +979,8 @@ def generate_breaking_news(trendy_word):
             logger.exception("Failed sending breaking news notifications")
 
         wc = len(summary_text.split())
-        logger.info(f"Breaking news sent for '{trendy_word.name}' (id={summary_obj.id}, {wc} words, {len(cves_final)} CVEs)")
+        logger.info(
+            f"Breaking news sent for '{trendy_word.name}' (id={summary_obj.id}, {wc} words, {len(cves_final)} CVEs)")
         return summary_obj
 
     except Exception as e:
@@ -1025,7 +1039,7 @@ def generate_trendy_word_summary(trendy_word_id):
             input_tokens = len(tokenizer.encode(corpus))
         except Exception:
             input_tokens = len(corpus.split())
-        
+
         max_len = min(150, max(80, input_tokens // 2))
         min_len = max(40, max_len // 2)
 
@@ -1073,7 +1087,8 @@ def generate_trendy_word_summary(trendy_word_id):
                             "length_penalty": 0.9,
                         }
                         try:
-                            outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
+                            outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get(
+                                "attention_mask"), **gen_kwargs)
                         except RuntimeError as e:
                             if "out of memory" in str(e).lower():
                                 try:
@@ -1083,10 +1098,12 @@ def generate_trendy_word_summary(trendy_word_id):
                                     pass
                                 gen_kwargs["max_new_tokens"] = 80
                                 gen_kwargs["num_beams"] = 2
-                                outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask"), **gen_kwargs)
+                                outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs.get(
+                                    "attention_mask"), **gen_kwargs)
                             else:
                                 raise
-                        summary_raw = model_tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True).strip()
+                        summary_raw = model_tokenizer.decode(
+                            outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True).strip()
             except Exception as e:
                 logger.error(f"Model.generate fallback failed for '{trendy_word.name}': {e}")
                 return None
@@ -1097,7 +1114,7 @@ def generate_trendy_word_summary(trendy_word_id):
 
         summary_text = clean_text_and_metadata(summary_raw.strip())
         summary_text = re.sub(r'\s+', ' ', summary_text).strip()
-        
+
         if not summary_text.endswith((".", "!", "?")):
             summary_text += "."
 
@@ -1143,8 +1160,14 @@ def generate_trendy_word_summary(trendy_word_id):
             keywords=trendy_word.name,
             defaults={'summary_text': final_summary}
         )
-        
-        logger.info(f"Summary {'created' if created else 'updated'} for '{trendy_word.name}' (id={summary_obj.id}, {len(summary_text.split())} words)")
+
+        logger.info(
+            f"Summary {
+                'created' if created else 'updated'} for '{
+                trendy_word.name}' (id={
+                summary_obj.id}, {
+                    len(
+                        summary_text.split())} words)")
         return summary_obj
 
     except Exception as e:
