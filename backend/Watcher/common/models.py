@@ -57,6 +57,13 @@ class LegitimateDomain(models.Model):
     List of company-approved legitimate domains used.
     """
     domain_name = models.CharField(max_length=255, unique=True)
+    company = models.ForeignKey(
+        'site_monitoring.Company', 
+        on_delete=models.CASCADE, 
+        related_name='legitimate_domains',
+        null=True,
+        blank=True
+    )
     ticket_id = models.CharField(max_length=20, blank=True, null=True)
     contact = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
