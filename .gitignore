@@ -1,66 +1,56 @@
 ```
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
+*.pyo
+*.pyd
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
-ENV/
-env.bak/
-.venv/
 env/
-ENV/
+venv/
+.venv/
+.ENV
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Django
+# Django/Backend
 *.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+.coverage
+coverage.xml
+*.cover
+*.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.tox/
+.coverage.*
+nosetests.xml
+coverage/
+htmlcov/
+
+# Local configuration file (sdk generation)
+.config/mkdocs.yml
+config.ini
+
+# Environment variables
 .env
+.env.local
+.env.dev
+.env.prod
+.env.*
+!.env.example
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Cache
-.mypy_cache/
-.pytest_cache/
-.coverage*
 ```

@@ -6,10 +6,11 @@ from rest_framework.exceptions import NotFound, AuthenticationFailed
 
 from dns_finder.models import DnsTwisted
 from .core import monitoring_init
-from .models import Alert, Site
+from .models import Alert, Site, TakedownStatus, Company
 
 from pymisp import PyMISP, MISPEvent
 from common.misp import create_misp_tags, create_or_update_objects, get_misp_uuid, update_misp_uuid
+from common.models import LegitimateDomain
 
 import urllib3
 import tldextract
@@ -18,16 +19,41 @@ import threading
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
+class CompanySerializer(serializers.ModelSerializer):
+    """Serializer for Company model"""
+    sites_count = serializers.SerializerMethodField()
+    legitimate_domains_count = serializers.SerializerMethodField()
+    
+    def get_sites_count(self, obj):
+        return obj.sites.count()
+    
+    def get_legitimate_domains_count(self, obj):
+        return obj.legitimate_domains.count()
+    
+    class Meta:
+        model = Company
+        fields = ['id', 'name', 'description', 'is_active', 'created_at', 'updated_at', 
+                  'sites_count', 'legitimate_domains_count']
+        read_only_fields = ['created_at', 'updated_at']
+
+
 # Site Serializer
 class SiteSerializer(serializers.ModelSerializer):
     misp_event_uuid = serializers.SerializerMethodField()
+    company_name = serializers.CharField(source='company.name', read_only=True)
+    takedown_status_label = serializers.CharField(source='get_takedown_status_display', read_only=True)
+    
+    # Backward compatibility for old takedown_request field
+    takedown_request = serializers.SerializerMethodField()
+    
+    def get_takedown_request(self, obj):
+        """Backward compatibility - returns True if takedown has been submitted"""
+        return obj.is_takedown_submitted
 
     def get_misp_event_uuid(self, obj):
         return get_misp_uuid(obj.domain_name)
 
     def validate_domain_name(self, value):
-        from common.models import LegitimateDomain
-
         extracted = tldextract.extract(value)
 
         if not extracted.domain or not extracted.suffix:

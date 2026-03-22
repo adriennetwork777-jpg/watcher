@@ -10,6 +10,13 @@ class DnsMonitored(models.Model):
     Dns stored in order to find twisted related dns
     """
     domain_name = models.CharField(max_length=100, unique=True)
+    company = models.ForeignKey(
+        'site_monitoring.Company', 
+        on_delete=models.CASCADE, 
+        related_name='dns_monitored',
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -26,6 +33,13 @@ class KeywordMonitored(models.Model):
     Keyword stored in order to find new certificates issued matching these keywords
     """
     name = models.CharField(max_length=100, unique=True)
+    company = models.ForeignKey(
+        'site_monitoring.Company', 
+        on_delete=models.CASCADE, 
+        related_name='keywords_monitored',
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

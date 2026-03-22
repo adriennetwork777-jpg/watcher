@@ -7,11 +7,45 @@ from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 
 
+class Company(models.Model):
+    """
+    Stores company information. All monitored objects are linked to a company.
+    """
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Company'
+        verbose_name_plural = 'Companies'
+    
+    def __str__(self):
+        return self.name
+
+
+class TakedownStatus(models.TextChoices):
+    NOT_SUBMITTED = 'not_submitted', 'Not Submitted'
+    SUBMITTED = 'submitted', 'Submitted'
+    WAITING = 'waiting', 'Waiting'
+    REFUSED = 'refused', 'Refused'
+    TAKEN_DOWN = 'taken_down', 'Taken Down'
+
+
 class Site(models.Model):
     """
     Stores a site which will be monitor (discrepancy in the hosting or in its DNS resolution, content hosted).
     """
     domain_name = models.CharField(max_length=100, unique=True)
+    company = models.ForeignKey(
+        Company, 
+        on_delete=models.CASCADE, 
+        related_name='sites',
+        null=True,
+        blank=True
+    )
     ticket_id = models.CharField(max_length=20, blank=True, null=True)
     rtir = models.IntegerField(unique=True, blank=True, null=True)
     ip = models.GenericIPAddressField(blank=True, null=True)
@@ -40,7 +74,17 @@ class Site(models.Model):
         (5, "Malicious (registered)"),
         (6, "Malicious (available/disabled)"),
     ], blank=True, null=True)
-    takedown_request = models.BooleanField(default=False)
+    
+    # Updated takedown fields
+    takedown_status = models.CharField(
+        max_length=20,
+        choices=TakedownStatus.choices,
+        default=TakedownStatus.NOT_SUBMITTED
+    )
+    takedown_submitted_at = models.DateTimeField(blank=True, null=True)
+    takedown_completed_at = models.DateTimeField(blank=True, null=True)
+    takedown_notes = models.TextField(blank=True, null=True)
+    
     legal_team = models.BooleanField(default=False)
     blocking_request = models.BooleanField(default=False)
 
@@ -71,6 +115,21 @@ class Site(models.Model):
 
     def __str__(self):
         return self.domain_name
+    
+    @property
+    def is_takedown_submitted(self):
+        """Check if takedown request has been submitted"""
+        return self.takedown_status in [
+            TakedownStatus.SUBMITTED,
+            TakedownStatus.WAITING,
+            TakedownStatus.REFUSED,
+            TakedownStatus.TAKEN_DOWN
+        ]
+    
+    @property
+    def is_takedown_completed(self):
+        """Check if takedown has been completed"""
+        return self.takedown_status == TakedownStatus.TAKEN_DOWN
 
 
 @receiver(pre_save, sender=Site)
@@ -78,6 +137,29 @@ def set_rtir(sender, instance, **kwargs):
     if instance.rtir is None:
         last_site = Site.objects.order_by('-rtir').first()
         instance.rtir = 1 if not last_site else last_site.rtir + 1
+
+
+@receiver(pre_save, sender=Site)
+def update_takedown_timestamps(sender, instance, **kwargs):
+    """
+    Automatically update takedown timestamps based on status changes
+    """
+    if instance.pk:  # Only on update
+        try:
+            old_instance = Site.objects.get(pk=instance.pk)
+            
+            # Update submitted_at when status changes to SUBMITTED or WAITING
+            if old_instance.takedown_status != instance.takedown_status:
+                if instance.takedown_status in [TakedownStatus.SUBMITTED, TakedownStatus.WAITING]:
+                    if not instance.takedown_submitted_at:
+                        instance.takedown_submitted_at = timezone.now()
+                
+                # Update completed_at when status changes to TAKEN_DOWN
+                elif instance.takedown_status == TakedownStatus.TAKEN_DOWN:
+                    if not instance.takedown_completed_at:
+                        instance.takedown_completed_at = timezone.now()
+        except Site.DoesNotExist:
+            pass
 
 
 class Alert(models.Model):
