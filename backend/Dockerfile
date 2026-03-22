@@ -1,69 +1,49 @@
-# Backend Dockerfile - Production Optimized
-ARG PYTHON_VERSION=3.11
-ARG DEBIAN_SUITE=bookworm
-
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS builder
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
+# Builder stage
+FROM python:3.11-slim-bookworm AS builder
 WORKDIR /app
 
-# Copy requirements and install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ default-libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
+COPY ./Watcher ./Watcher
+COPY Watcher/manage.py .
+COPY nltk_dependencies.py .
+
 # Production stage
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE}
-
-# Security: Create non-root user
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-libmysqlclient-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app/backend
 
-# Copy installed packages from builder
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+RUN apt-get update && apt-get install -y --no-install-recommends default-libmysqlclient-dev curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from builder
 COPY --from=builder /root/.local /home/appuser/.local
+COPY --from=builder /app/Watcher ./Watcher
+COPY --from=builder /app/manage.py .
+COPY --from=builder /app/nltk_dependencies.py .
 
-# Copy application code
-COPY Watcher ./Watcher
-COPY static ./static
-COPY manage.py .
-COPY nltk_dependencies.py .
-
-# Set environment variables
 ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=Watcher.settings
+    DJANGO_SETTINGS_MODULE=Watcher.settings \
+    PYTHONPATH=/app/backend \
+    NLTK_DATA=/home/appuser/nltk_data
+
+RUN mkdir -p /app/backend/logs /home/appuser/nltk_data \
+    && chown -R appuser:appgroup /app/backend /home/appuser/nltk_data \
+    && chmod -R 755 /app/backend
+
+USER appuser
 
 # Download NLTK dependencies
 RUN python nltk_dependencies.py
 
-# Create necessary directories and set permissions
-RUN mkdir -p /app/backend/logs /app/backend/static \
-    && chown -R appuser:appgroup /app/backend \
-    && chmod -R 755 /app/backend
-
-# Switch to non-root user
-USER appuser
-
-# Expose port
-EXPOSE 9002
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:9002/api/health/ || exit 1
-
-# Run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:9002"]
+# Gunicorn command: logs go into writable folder
+CMD ["gunicorn", "Watcher.wsgi:application", "--chdir=/app/backend", "-b", "0.0.0.0:9002", "--workers=3", "--threads=2", "--access-logfile", "/app/backend/logs/access.log", "--error-logfile", "/app/backend/logs/error.log"]

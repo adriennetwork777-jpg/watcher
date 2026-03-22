@@ -87,7 +87,6 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-      - /etc/searxng
     volumes:
       - ./Searx/searx:/etc/searxng:rw
       - searx_data:/data

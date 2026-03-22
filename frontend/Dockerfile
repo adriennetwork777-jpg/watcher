@@ -1,55 +1,31 @@
-# Frontend Dockerfile - Production Optimized
 FROM node:20-alpine AS builder
 
-WORKDIR /app
-
-# Copy package files
-COPY code/package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production 2>/dev/null || npm install --only=production
-
-# Copy source code
-COPY code/ ./code/
-
-# Build the application
 WORKDIR /app/code
-RUN npm run build 2>/dev/null || echo "Build completed"
+COPY package.json package-lock.json* ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-# Production stage with Nginx
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
-# Security: Create non-root user (nginx already exists in alpine)
+# Supprime configs par défaut
+RUN rm -rf /etc/nginx/conf.d/*
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+# Copie nginx.conf complet
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copie assets buildés
+COPY --from=builder /app/code/static/frontend /usr/share/nginx/html
 
-# Copy built assets from builder stage
-COPY --from=builder /app/code/build /usr/share/nginx/html 2>/dev/null || \
-COPY --from=builder /app/code/dist /usr/share/nginx/html 2>/dev/null || \
-COPY --from=builder /app/code/public /usr/share/nginx/html || \
-echo "No build output found, using placeholder"
+# Crée utilisateur non-root
+RUN addgroup -S nginxgroup && adduser -S nginxuser -G nginxgroup \
+    && chown -R nginxuser:nginxgroup /usr/share/nginx/html /var/cache/nginx /tmp \
+    && chmod -R 755 /usr/share/nginx/html /tmp
 
-# Create necessary directories for tmpfs mounts
-RUN mkdir -p /var/cache/nginx /var/run /tmp \
-    && chown -R nginx:nginx /var/cache/nginx /var/run /tmp \
-    && touch /var/run/nginx.pid \
-    && chown nginx:nginx /var/run/nginx.pid
-
-# Set proper permissions
-RUN chmod -R 755 /usr/share/nginx/html
-
-# Expose port
+USER nginxuser
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
-
-# Run nginx as non-root user
-USER nginx
 
 CMD ["nginx", "-g", "daemon off;"]
