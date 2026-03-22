@@ -9,40 +9,15 @@ env/
 venv/
 .venv/
 .ENV
+.ENV.*
 .venv.bak/
-pip-log.txt
-pip-delete-this-directory.txt
+env.bak/
 
-# Django/Backend
+# Django
 *.log
-*.pot
-*.pyc
-*.pyo
-__pycache__/
-.coverage
-coverage.xml
-*.cover
-*.log
-.git/
-.mypy_cache/
-.pytest_cache/
-.tox/
-.coverage.*
-nosetests.xml
-coverage/
-htmlcov/
-
-# Local configuration file (sdk generation)
-.config/mkdocs.yml
-config.ini
-
-# Environment variables
-.env
-.env.local
-.env.dev
-.env.prod
-.env.*
-!.env.example
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
 # IDE
 .vscode/
@@ -53,4 +28,19 @@ config.ini
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Build and distribution
+dist/
+build/
+*.egg-info/
 ```

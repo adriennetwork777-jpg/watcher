@@ -10,12 +10,20 @@ from django.dispatch import receiver
 class Company(models.Model):
     """
     Stores company information. All monitored objects are linked to a company.
+    Each company has its own takedown credit pool.
     """
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Takedown credit management
+    takedown_credits = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of takedown credits available for this company"
+    )
+    last_credit_purchase = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         ordering = ['name']
@@ -24,14 +32,122 @@ class Company(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def has_takedown_credits(self):
+        """Check if company has available takedown credits"""
+        return self.takedown_credits > 0
+    
+    def consume_takedown_credit(self):
+        """
+        Consume one takedown credit.
+        Returns True if successful, False if no credits available.
+        """
+        if self.takedown_credits > 0:
+            self.takedown_credits -= 1
+            self.save(update_fields=['takedown_credits'])
+            return True
+        return False
+    
+    def add_takedown_credits(self, amount):
+        """Add takedown credits to the company pool"""
+        if amount > 0:
+            self.takedown_credits += amount
+            self.last_credit_purchase = timezone.now()
+            self.save(update_fields=['takedown_credits', 'last_credit_purchase'])
+            return self.takedown_credits
+        return self.takedown_credits
 
 
 class TakedownStatus(models.TextChoices):
+    """
+    Enumeration of possible takedown request statuses.
+    Used to track the lifecycle of a takedown request.
+    """
     NOT_SUBMITTED = 'not_submitted', 'Not Submitted'
     SUBMITTED = 'submitted', 'Submitted'
     WAITING = 'waiting', 'Waiting'
     REFUSED = 'refused', 'Refused'
     TAKEN_DOWN = 'taken_down', 'Taken Down'
+
+
+class TakedownRequest(models.Model):
+    """
+    Tracks individual takedown requests for domains.
+    Each request is linked to a company and consumes one credit.
+    """
+    # Status matches TakedownStatus choices
+    status = models.CharField(
+        max_length=20,
+        choices=TakedownStatus.choices,
+        default=TakedownStatus.NOT_SUBMITTED
+    )
+    
+    # Link to the site being requested for takedown
+    site = models.ForeignKey(
+        'Site',
+        on_delete=models.CASCADE,
+        related_name='takedown_requests'
+    )
+    
+    # Company that submitted the request
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='takedown_requests'
+    )
+    
+    # User who submitted the request
+    submitted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='takedown_requests'
+    )
+    
+    # Timestamps
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    
+    # Additional information
+    notes = models.TextField(blank=True, null=True, help_text="Internal notes about this takedown request")
+    external_reference = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        help_text="Reference ID from external takedown service"
+    )
+    
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name = 'Takedown Request'
+        verbose_name_plural = 'Takedown Requests'
+    
+    def __str__(self):
+        return f"Takedown #{self.id} - {self.site.domain_name} ({self.get_status_display()})"
+    
+    def mark_as_completed(self):
+        """Mark the takedown request as completed and update timestamps"""
+        self.status = TakedownStatus.TAKEN_DOWN
+        self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'completed_at'])
+        
+        # Also update the site's takedown status
+        self.site.takedown_status = TakedownStatus.TAKEN_DOWN
+        self.site.takedown_completed_at = self.completed_at
+        self.site.save(update_fields=['takedown_status', 'takedown_completed_at'])
+    
+    def mark_as_refused(self, notes=None):
+        """Mark the takedown request as refused"""
+        self.status = TakedownStatus.REFUSED
+        if notes:
+            self.notes = notes
+        self.save(update_fields=['status', 'notes'])
+        
+        # Update site status but don't override if already taken down
+        if self.site.takedown_status != TakedownStatus.TAKEN_DOWN:
+            self.site.takedown_status = TakedownStatus.REFUSED
+            self.site.save(update_fields=['takedown_status'])
 
 
 class Site(models.Model):
