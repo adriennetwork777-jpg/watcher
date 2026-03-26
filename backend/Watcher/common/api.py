@@ -15,6 +15,25 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+# Health check endpoint
+class HealthViewSet(viewsets.ViewSet):
+    """
+    API endpoint for health checks.
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    @action(detail=False, methods=['get'], url_path='health')
+    def health(self, request):
+        """
+        Health check endpoint.
+        Returns the status of the application.
+        """
+        return Response({
+            'status': 'healthy',
+            'message': 'Backend is running'
+        }, status=status.HTTP_200_OK)
+
+
 # LegitimateDomain Viewset
 class LegitimateDomainViewSet(viewsets.ModelViewSet):
     """

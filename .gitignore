@@ -1,17 +1,25 @@
 ```
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
-env/
-venv/
-.venv/
-.ENV
-.ENV.*
-.venv.bak/
-env.bak/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Django
 *.log
@@ -19,28 +27,23 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Environment
+.env
+.env.local
+.env.*
+.env~*
+.venv/
+venv/
+ENV/
+
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# Build and distribution
-dist/
-build/
-*.egg-info/
 ```

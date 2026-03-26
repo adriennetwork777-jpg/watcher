@@ -255,6 +255,14 @@ DATABASES = {
     }
 }
 
+# Use PyMySQL as MySQLdb replacement
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# Patch version check for Django compatibility
+import django.db.backends.mysql.base as mysql_base
+mysql_base.Database = pymysql
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
