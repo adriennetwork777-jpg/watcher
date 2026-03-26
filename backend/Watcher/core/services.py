@@ -4,7 +4,7 @@ All services should inherit from this class to ensure consistency.
 """
 from django.db import transaction
 from django.core.exceptions import ValidationError, PermissionDenied
-from core.models import AuditLog
+from Watcher.core.models import AuditLog
 
 
 class BaseService:
@@ -98,7 +98,7 @@ class BaseService:
         Returns:
             Boolean indicating if user has permission
         """
-        from core.models import user_has_permission
+        from Watcher.core.models import user_has_permission
         
         user = self.get_user()
         

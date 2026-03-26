@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class DataLeakConfig(AppConfig):
-    name = 'site_monitoring'
+class SiteMonitoringConfig(AppConfig):
+    name = 'Watcher.site_monitoring'
