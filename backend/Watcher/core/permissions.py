@@ -4,7 +4,7 @@ Provides fine-grained access control based on RBAC system.
 """
 from rest_framework import permissions
 from django.core.exceptions import PermissionDenied
-from core.models import AuditLog, user_has_role, user_has_permission
+from Watcher.core.models import AuditLog, user_has_role, user_has_permission
 
 
 class RequirePermission(permissions.BasePermission):

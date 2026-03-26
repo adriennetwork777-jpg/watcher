@@ -163,7 +163,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Core modules (load first for dependencies)
-    'core',
+    'Watcher.core',
     'knox',
     'rest_framework',
     # Application modules
@@ -187,7 +187,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'EXCEPTION_HANDLER': 'core.exceptions.handle_exception',
+    'EXCEPTION_HANDLER': 'Watcher.core.exceptions.handle_exception',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
@@ -258,10 +258,6 @@ DATABASES = {
 # Use PyMySQL as MySQLdb replacement
 import pymysql
 pymysql.install_as_MySQLdb()
-
-# Patch version check for Django compatibility
-import django.db.backends.mysql.base as mysql_base
-mysql_base.Database = pymysql
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
