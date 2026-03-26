@@ -6,9 +6,9 @@ from datetime import timedelta, date
 from rest_framework.test import APITestCase
 from rest_framework import status
 from knox.models import AuthToken
-from site_monitoring.models import Site, Alert, Subscriber
-from site_monitoring.core import monitoring_init, create_rdap_alert, send_website_monitoring_notifications
-from site_monitoring.serializers import SiteSerializer, AlertSerializer
+from Watcher.site_monitoring.models import Site, Alert, Subscriber
+from Watcher.site_monitoring.core import monitoring_init, create_rdap_alert, send_website_monitoring_notifications
+from Watcher.site_monitoring.serializers import SiteSerializer, AlertSerializer
 import uuid
 
 
@@ -154,7 +154,7 @@ class CoreFunctionsTest(TestCase):
         mock_response.status_code = 200
         mock_response.text = "Test content " * 100
         mock_get.return_value = mock_response
-        from site_monitoring.core import check_content
+        from Watcher.site_monitoring.core import check_content
         site = Site.objects.create(
             domain_name="content-test.com",
             content_monitoring=True
@@ -230,7 +230,7 @@ class RDAPWhoisTest(TestCase):
         mock_instance.get_registrar.return_value = "RDAP Registrar"
         mock_instance.get_expiration_date.return_value = "2026-12-31"
         mock_rdap.return_value = mock_instance
-        from site_monitoring.core import perform_site_rdap_lookup
+        from Watcher.site_monitoring.core import perform_site_rdap_lookup
         site = Site.objects.create(domain_name="rdap-lookup-test.com")
         result = perform_site_rdap_lookup(site)
         self.assertTrue(result)
@@ -245,7 +245,7 @@ class RDAPWhoisTest(TestCase):
         mock_instance.get_registrar.return_value = "WHOIS Registrar"
         mock_whois.return_value = mock_instance
         site = Site.objects.create(domain_name="whois-test.com")
-        from site_monitoring.core import perform_site_rdap_lookup
+        from Watcher.site_monitoring.core import perform_site_rdap_lookup
         result = perform_site_rdap_lookup(site)
         site.refresh_from_db()
         self.assertIsNotNone(site.registrar)
@@ -273,7 +273,7 @@ class IntegrationTest(TransactionTestCase):
         fake_alert.type = "IP change detected"
         fake_alert.new_ip = "192.168.1.2"
         mock_alert_create.return_value = fake_alert
-        from site_monitoring.core import create_alert
+        from Watcher.site_monitoring.core import create_alert
         create_alert(
             alert=1,
             site=site,
@@ -287,7 +287,7 @@ class IntegrationTest(TransactionTestCase):
 
     def test_site_deletion_signal(self):
         """Test site deletion removes MISP mapping."""
-        from common.models import MISPEventUuidLink
+        from Watcher.common.models import MISPEventUuidLink
         site = Site.objects.create(domain_name="signal-test.com")
         MISPEventUuidLink.objects.create(
             domain_name="signal-test.com",

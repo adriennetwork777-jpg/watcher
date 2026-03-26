@@ -11,9 +11,9 @@ import tzlocal
 from django.conf import settings
 from django.db.models.functions import Length
 from json.decoder import JSONDecodeError
-from common.core import send_app_specific_notifications
-from common.core import send_app_specific_notifications_group
-from common.core import send_only_thehive_notifications
+from Watcher.common.core import send_app_specific_notifications
+from Watcher.common.core import send_app_specific_notifications_group
+from Watcher.common.core import send_only_thehive_notifications
 from django.db.models import Q
 
 # Configure logger

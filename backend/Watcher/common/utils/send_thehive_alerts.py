@@ -2,8 +2,8 @@ import requests
 import logging
 from django.conf import settings
 from django.utils import timezone
-from common.utils.update_thehive import handle_alert_or_case, create_new_alert
-from site_monitoring.models import Site
+from Watcher.common.utils.update_thehive import handle_alert_or_case, create_new_alert
+from Watcher.site_monitoring.models import Site
 
 # Configure logger
 logger = logging.getLogger('watcher.common')
@@ -60,7 +60,7 @@ def send_thehive_alert(
         customFields=None,
         thehive_url=None,
         api_key=None):
-    from common.core import generate_ref
+    from Watcher.common.core import generate_ref
     """
     Send or update an alert in TheHive based on the application and ticket_id.
 

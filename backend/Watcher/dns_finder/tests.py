@@ -6,8 +6,8 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework import status
 from knox.models import AuthToken
-from dns_finder.models import DnsMonitored, DnsTwisted, Alert, KeywordMonitored, Subscriber
-from dns_finder.core import in_dns_monitored, send_dns_finder_notifications
+from Watcher.dns_finder.models import DnsMonitored, DnsTwisted, Alert, KeywordMonitored, Subscriber
+from Watcher.dns_finder.core import in_dns_monitored, send_dns_finder_notifications
 import uuid
 from unittest.mock import patch
 
@@ -82,7 +82,7 @@ class CoreTest(TestCase):
 
     def test_clean_wildcard_domain(self):
         """Test wildcard domain cleaning."""
-        from dns_finder.core import clean_wildcard_domain
+        from Watcher.dns_finder.core import clean_wildcard_domain
 
         self.assertEqual(clean_wildcard_domain("*.example.com"), "example.com")
         self.assertEqual(clean_wildcard_domain("example.com"), "example.com")
@@ -107,7 +107,7 @@ class CoreTest(TestCase):
     @patch('dns_finder.core.subprocess.check_output')
     def test_check_dnstwist(self, mock_subprocess):
         """Test dnstwist checking."""
-        from dns_finder.core import check_dnstwist
+        from Watcher.dns_finder.core import check_dnstwist
 
         mock_subprocess.return_value = b'{"domain": "test.com"}'
 
@@ -126,7 +126,7 @@ class SerializerTest(TestCase):
 
     def test_all_serializers(self):
         """Test all serializers together."""
-        from dns_finder.serializers import DnsMonitoredSerializer, DnsTwistedSerializer, KeywordMonitoredSerializer
+        from Watcher.dns_finder.serializers import DnsMonitoredSerializer, DnsTwistedSerializer, KeywordMonitoredSerializer
 
         dns = DnsMonitored.objects.create(domain_name="serializer-dns.com")
         keyword = KeywordMonitored.objects.create(name="serializer-keyword")
@@ -149,7 +149,7 @@ class SerializerTest(TestCase):
 
     def test_domain_validation(self):
         """Test domain name validation in serializer."""
-        from dns_finder.serializers import DnsMonitoredSerializer
+        from Watcher.dns_finder.serializers import DnsMonitoredSerializer
 
         serializer = DnsMonitoredSerializer(data={'domain_name': 'valid.com'})
         self.assertTrue(serializer.is_valid())
@@ -240,7 +240,7 @@ class MISPTest(TestCase):
     @patch('dns_finder.serializers.PyMISP')
     def test_misp_serializer(self, mock_misp):
         """Test MISP serializer."""
-        from dns_finder.serializers import MISPSerializer
+        from Watcher.dns_finder.serializers import MISPSerializer
 
         mock_api = MagicMock()
         mock_api.add_event.return_value = MagicMock(id='123', uuid='test-uuid')
@@ -282,7 +282,7 @@ class IntegrationTest(TestCase):
 
     def test_deletion_signals(self):
         """Test cascade deletion and MISP cleanup."""
-        from common.models import MISPEventUuidLink
+        from Watcher.common.models import MISPEventUuidLink
 
         dns = DnsMonitored.objects.create(domain_name="signal-test.com")
         twisted = DnsTwisted.objects.create(

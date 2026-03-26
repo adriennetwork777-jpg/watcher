@@ -4,9 +4,9 @@ from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
-from common.models import MISPEventUuidLink
-from common.core import generate_ref
-from common.misp import get_misp_uuid, update_misp_uuid
+from Watcher.common.models import MISPEventUuidLink
+from Watcher.common.core import generate_ref
+from Watcher.common.misp import get_misp_uuid, update_misp_uuid
 
 
 class MISPEventUuidLinkModelTest(TestCase):
@@ -110,8 +110,8 @@ class NotificationSystemTest(TestCase):
     @patch('common.core.send_email_notifications')
     def test_notification_functions_exist(self, mock_email, mock_slack):
         """Test that notification functions can be called without errors."""
-        from common.core import send_app_specific_notifications
-        from data_leak.models import Subscriber
+        from Watcher.common.core import send_app_specific_notifications
+        from Watcher.data_leak.models import Subscriber
 
         user = User.objects.create_user("testuser", "test@test.com", "pass")
         subscriber = Subscriber.objects.create(user_rec=user, email=True, slack=True)

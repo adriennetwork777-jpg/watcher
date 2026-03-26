@@ -7,8 +7,8 @@ from datetime import timedelta
 from rest_framework.test import APITestCase
 from rest_framework import status
 from knox.models import AuthToken
-from data_leak.models import Keyword, Alert, PasteId, Subscriber
-from data_leak.core import send_data_leak_notifications
+from Watcher.data_leak.models import Keyword, Alert, PasteId, Subscriber
+from Watcher.data_leak.core import send_data_leak_notifications
 
 
 class KeywordModelTest(TestCase):
@@ -69,7 +69,7 @@ class CoreFunctionsTest(TransactionTestCase):
 
     def test_check_urls_functionality(self):
         """Test URL checking to avoid duplicates."""
-        from data_leak.core import check_urls
+        from Watcher.data_leak.core import check_urls
 
         keyword = Keyword.objects.create(name="test")
         Alert.objects.create(keyword=keyword, url="https://existing.com")
@@ -82,7 +82,7 @@ class CoreFunctionsTest(TransactionTestCase):
 
     def test_cleanup_functionality(self):
         """Test cleanup of old paste IDs."""
-        from data_leak.core import cleanup
+        from Watcher.data_leak.core import cleanup
 
         # Create old paste
         old_paste = PasteId.objects.create(paste_id="OLD123")
@@ -184,8 +184,8 @@ class IntegrationTest(TransactionTestCase):
     @patch('data_leak.core.check_pastebin')
     def test_monitoring_integration(self, mock_pastebin, mock_searx):
         """Test monitoring system integration."""
-        from data_leak.core import check_keywords
-        import data_leak.core
+        from Watcher.data_leak.core import check_keywords
+        import Watcher.data_leak.core
 
         mock_searx.return_value = ["https://searx-test.com"]
         mock_pastebin.return_value = {"https://pastebin.com/test": self.keyword.name}
@@ -242,7 +242,7 @@ class SerializerTest(TestCase):
 
     def test_keyword_serialization(self):
         """Test keyword serialization."""
-        from data_leak.serializers import KeywordSerializer
+        from Watcher.data_leak.serializers import KeywordSerializer
 
         keyword = Keyword.objects.create(name="serializer-test")
         serializer = KeywordSerializer(keyword)
@@ -252,7 +252,7 @@ class SerializerTest(TestCase):
 
     def test_alert_serialization(self):
         """Test alert serialization with nested keyword."""
-        from data_leak.serializers import AlertSerializer
+        from Watcher.data_leak.serializers import AlertSerializer
 
         keyword = Keyword.objects.create(name="alert-serializer")
         alert = Alert.objects.create(keyword=keyword, url="https://test.com")

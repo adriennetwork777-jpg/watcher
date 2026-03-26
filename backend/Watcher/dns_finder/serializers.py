@@ -2,12 +2,12 @@ from rest_framework import serializers
 from django.conf import settings
 from django.utils import timezone
 from .models import Alert, DnsMonitored, DnsTwisted, KeywordMonitored
-from site_monitoring.models import Site
-from site_monitoring.core import monitoring_init
+from Watcher.site_monitoring.models import Site
+from Watcher.site_monitoring.core import monitoring_init
 import requests
 from rest_framework.exceptions import NotFound, AuthenticationFailed
 from pymisp import PyMISP, MISPEvent
-from common.misp import create_misp_tags, create_or_update_objects, get_misp_uuid, update_misp_uuid
+from Watcher.common.misp import create_misp_tags, create_or_update_objects, get_misp_uuid, update_misp_uuid
 
 import urllib3
 import tldextract

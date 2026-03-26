@@ -4,13 +4,13 @@ from django.utils import timezone
 import requests
 from rest_framework.exceptions import NotFound, AuthenticationFailed
 
-from dns_finder.models import DnsTwisted
+from Watcher.dns_finder.models import DnsTwisted
 from .core import monitoring_init
 from .models import Alert, Site, TakedownStatus, Company, TakedownRequest
 
 from pymisp import PyMISP, MISPEvent
-from common.misp import create_misp_tags, create_or_update_objects, get_misp_uuid, update_misp_uuid
-from common.models import LegitimateDomain
+from Watcher.common.misp import create_misp_tags, create_or_update_objects, get_misp_uuid, update_misp_uuid
+from Watcher.common.models import LegitimateDomain
 
 import urllib3
 import tldextract

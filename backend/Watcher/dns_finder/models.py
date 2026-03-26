@@ -107,5 +107,5 @@ def handle_dns_twisted_deletion(sender, instance, **kwargs):
     Signal triggered after deleting a twisted DNS domain.
     Checks if the domain is still being monitored elsewhere, otherwise removes the MISP mapping.
     """
-    from common.models import MISPEventUuidLink
+    from Watcher.common.models import MISPEventUuidLink
     MISPEventUuidLink.check_and_delete_unused_domain(instance.domain_name)
