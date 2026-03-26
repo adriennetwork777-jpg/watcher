@@ -7,7 +7,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "watcher.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Watcher.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError:
