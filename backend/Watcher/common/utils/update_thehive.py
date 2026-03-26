@@ -255,7 +255,7 @@ def create_new_alert(
         api_key,
         parent_domain=None,
         subdomain=None):
-    from common.core import generate_ref
+    from Watcher.common.core import generate_ref
     """
     Create a new alert in TheHive with the provided details.
     Automatically adds parent_domain and subdomain tags.

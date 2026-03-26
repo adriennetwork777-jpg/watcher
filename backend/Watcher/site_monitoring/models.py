@@ -359,5 +359,5 @@ def handle_site_deletion(sender, instance, **kwargs):
     Signal triggered after deleting a site.
     Checks if the domain is still monitored elsewhere, otherwise removes the MISP mapping.
     """
-    from common.models import MISPEventUuidLink
+    from Watcher.common.models import MISPEventUuidLink
     MISPEventUuidLink.check_and_delete_unused_domain(instance.domain_name)

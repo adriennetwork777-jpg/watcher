@@ -179,7 +179,7 @@ def get_domains_needing_whois():
     :rtype: django.db.models.QuerySet
     """
     try:
-        from site_monitoring.models import Site
+        from Watcher.site_monitoring.models import Site
 
         domains_to_update = Site.objects.filter(
             registrar__isnull=True
@@ -191,7 +191,7 @@ def get_domains_needing_whois():
 
     except Exception as e:
         logger.error(f"Error retrieving domains for WHOIS lookup: {str(e)}")
-        from site_monitoring.models import Site
+        from Watcher.site_monitoring.models import Site
         return Site.objects.none()
 
 

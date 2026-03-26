@@ -13,7 +13,7 @@ import feedparser
 import requests
 import re
 from django.db import close_old_connections
-from common.core import send_app_specific_notifications
+from Watcher.common.core import send_app_specific_notifications
 from django.db.models import Q
 from urllib.parse import urlparse
 from .model_manager import get_ner_pipeline

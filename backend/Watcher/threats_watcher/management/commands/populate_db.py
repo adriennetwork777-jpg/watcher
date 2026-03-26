@@ -1,6 +1,6 @@
 from abc import ABC
 from django.utils import timezone
-from threats_watcher.models import BannedWord, Source
+from Watcher.threats_watcher.models import BannedWord, Source
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission

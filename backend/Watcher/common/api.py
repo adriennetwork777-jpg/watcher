@@ -115,8 +115,8 @@ class LegitimateDomainViewSet(viewsets.ModelViewSet):
         """
         Export legitimate domain to MISP using DNS Finder's logic.
         """
-        from dns_finder.api import MISPViewSet
-        from dns_finder.serializers import MISPSerializer
+        from Watcher.dns_finder.api import MISPViewSet
+        from Watcher.dns_finder.serializers import MISPSerializer
         import logging
 
         logger = logging.getLogger(__name__)

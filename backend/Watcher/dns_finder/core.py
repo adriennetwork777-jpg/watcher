@@ -9,11 +9,11 @@ from django.conf import settings
 from apscheduler.schedulers.background import BackgroundScheduler
 import tzlocal
 from .models import Alert, DnsMonitored, DnsTwisted, Subscriber, KeywordMonitored
-from common.models import LegitimateDomain
+from Watcher.common.models import LegitimateDomain
 from . import certstream_client
-from common.core import send_app_specific_notifications
-from common.core import send_app_specific_notifications_group
-from common.core import send_only_thehive_notifications
+from Watcher.common.core import send_app_specific_notifications
+from Watcher.common.core import send_app_specific_notifications_group
+from Watcher.common.core import send_only_thehive_notifications
 from django.db.models import Q
 
 # Configure logger

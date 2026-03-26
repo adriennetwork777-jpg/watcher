@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import DnsMonitored, DnsTwisted, Alert, Subscriber, KeywordMonitored
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin, ExportMixin
-from common.misp import get_misp_uuid
+from Watcher.common.misp import get_misp_uuid
 
 
 def custom_titled_filter(title):

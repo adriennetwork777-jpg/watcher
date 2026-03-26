@@ -8,8 +8,8 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from knox.models import AuthToken
-from threats_watcher.models import Source, PostUrl, TrendyWord, BannedWord, Subscriber, Summary
-from threats_watcher.serializers import TrendyWordSerializer, BannedWordSerializer, SummarySerializer
+from Watcher.threats_watcher.models import Source, PostUrl, TrendyWord, BannedWord, Subscriber, Summary
+from Watcher.threats_watcher.serializers import TrendyWordSerializer, BannedWordSerializer, SummarySerializer
 
 
 class ModelTest(TransactionTestCase):
@@ -104,7 +104,7 @@ class CoreTest(TestCase):
         user = User.objects.create_user(f"notif{timestamp}", "test@test.com", "pass")
         Subscriber.objects.create(user_rec=user, email=True)
 
-        from threats_watcher.core import send_threats_watcher_notifications
+        from Watcher.threats_watcher.core import send_threats_watcher_notifications
         send_threats_watcher_notifications([f"test-{timestamp}"])
         mock_notifications.assert_called_once()
 
@@ -114,7 +114,7 @@ class SerializerTest(TestCase):
 
     def test_serializers(self):
         """Test all serializers."""
-        from threats_watcher.serializers import TrendyWordSerializer, BannedWordSerializer
+        from Watcher.threats_watcher.serializers import TrendyWordSerializer, BannedWordSerializer
         timestamp = str(int(time.time()))
 
         # TrendyWord
@@ -235,7 +235,7 @@ class IntegrationTest(TestCase):
     @patch('threats_watcher.core.start_scheduler')
     def test_scheduler_notifications(self, mock_scheduler, mock_notifications):
         """Test scheduler and notifications."""
-        from threats_watcher.core import send_threats_watcher_notifications, start_scheduler
+        from Watcher.threats_watcher.core import send_threats_watcher_notifications, start_scheduler
 
         # Test notifications
         send_threats_watcher_notifications([f'test-{self.timestamp}'])
@@ -259,7 +259,7 @@ def test_extract_entities_and_threats(self, mock_get_ner_pipeline):
         {"entity_group": "LOC", "word": "Paris"},
         {"entity_group": "MISC", "word": "Windows"},
     ]
-    from threats_watcher.core import extract_entities_and_threats
+    from Watcher.threats_watcher.core import extract_entities_and_threats
     title = "Alice from Acme Corp detected CVE-2023-1234 in Windows at Paris. APT28 involved."
     result = extract_entities_and_threats(title)
     assert "Alice" in result["persons"]
@@ -283,7 +283,7 @@ class ReliabilityScoreTest(TestCase):
     @patch('threats_watcher.core.get_pre_redirect_domain')
     def test_reliability_score(self, mock_pre_redirect):
         mock_pre_redirect.return_value = "trusted-source.com"
-        from threats_watcher.core import reliability_score
+        from Watcher.threats_watcher.core import reliability_score
         reliability_score()
         updated_word = TrendyWord.objects.get(pk=self.word.pk)
         assert updated_word.score == 100  # confident=1 gives 100
@@ -302,12 +302,12 @@ class TrendingAlgorithmTest(TestCase):
         }
 
     def test_focus_on_top(self):
-        import threats_watcher.core
+        import Watcher.threats_watcher.core
         setattr(threats_watcher.core, 'wordurl', self.wordurl)
         setattr(threats_watcher.core, 'posts_published', self.posts_published)
         setattr(threats_watcher.core, 'posts_five_letters', {"malware": 2})
 
-        from threats_watcher.core import focus_on_top
+        from Watcher.threats_watcher.core import focus_on_top
         TrendyWord.objects.create(name="malware", occurrences=2)
         focus_on_top(2)
         word = TrendyWord.objects.get(name="malware")
@@ -355,7 +355,7 @@ class PerformanceTest(TestCase):
     def test_cleanup(self):
         """Test cleanup functionality."""
         with patch('threats_watcher.core.cleanup') as mock_cleanup:
-            from threats_watcher.core import cleanup
+            from Watcher.threats_watcher.core import cleanup
             unique_id = str(uuid.uuid4())[:8]
 
             mock_cleanup.return_value = None

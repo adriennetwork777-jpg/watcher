@@ -246,7 +246,7 @@ def perform_single_ssl_check(site):
 
                     # Create alert if SSL expiry changed
                     if old_ssl_expiry is not None:
-                        from site_monitoring.models import Alert
+                        from Watcher.site_monitoring.models import Alert
                         Alert.objects.create(
                             site=site,
                             type="SSL Certificate Expiry Changed",
@@ -278,7 +278,7 @@ def update_all_sites_ssl_certificates():
     :return: Number of sites successfully updated
     :rtype: int
     """
-    from site_monitoring.models import Site
+    from Watcher.site_monitoring.models import Site
     from django.db import close_old_connections
 
     close_old_connections()

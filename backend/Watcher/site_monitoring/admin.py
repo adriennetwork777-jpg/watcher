@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import Alert, Site, Subscriber, Company, TakedownRequest, TakedownStatus
 from import_export import resources
 from import_export.admin import ExportMixin
-from common.misp import get_misp_uuid
+from Watcher.common.misp import get_misp_uuid
 
 
 def custom_titled_filter(title):

@@ -34,8 +34,8 @@ class MISPEventUuidLink(models.Model):
         Args:
             domain_name: Domain name to check
         """
-        from site_monitoring.models import Site
-        from dns_finder.models import DnsTwisted
+        from Watcher.site_monitoring.models import Site
+        from Watcher.dns_finder.models import DnsTwisted
 
         still_in_site = Site.objects.filter(domain_name=domain_name).exists()
         still_in_dns = DnsTwisted.objects.filter(domain_name=domain_name).exists()

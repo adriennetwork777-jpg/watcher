@@ -19,12 +19,12 @@ import ipaddress
 from dns import resolver
 from dns.exception import DNSException
 import shadow_useragent
-from common.core import send_app_specific_notifications
+from Watcher.common.core import send_app_specific_notifications
 from django.db.models import Q
 import time
 import random
-from common.utils.rdap import RDAPDiscovery
-from common.utils.whois import WhoisDiscovery
+from Watcher.common.utils.rdap import RDAPDiscovery
+from Watcher.common.utils.whois import WhoisDiscovery
 
 # Configure logger
 logger = logging.getLogger('watcher.site_monitoring')

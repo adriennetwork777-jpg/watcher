@@ -7,8 +7,8 @@ from django.utils import timezone
 from django.conf import settings
 import re
 from html import unescape
-from site_monitoring.models import Site
-from common.models import LegitimateDomain
+from Watcher.site_monitoring.models import Site
+from Watcher.common.models import LegitimateDomain
 from datetime import datetime
 from secrets import token_hex
 from .mail_template.threats_watcher_template import get_threats_watcher_template
@@ -1258,7 +1258,7 @@ def update_monitored_sites_rdap_data():
 
                 # Create alert for registrar change
                 if old_registrar:
-                    from site_monitoring.models import Alert
+                    from Watcher.site_monitoring.models import Alert
                     Alert.objects.create(
                         site=site,
                         type="Registrar Changed",
@@ -1279,7 +1279,7 @@ def update_monitored_sites_rdap_data():
 
                         # Create alert for expiry change
                         if old_expiry:
-                            from site_monitoring.models import Alert
+                            from Watcher.site_monitoring.models import Alert
                             Alert.objects.create(
                                 site=site,
                                 type="Domain Expiry Changed",

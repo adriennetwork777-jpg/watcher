@@ -69,7 +69,7 @@ def create_objects(obj, existing_values=None):
     }
 
     # Check object type and add specific attributes
-    from site_monitoring.models import Site
+    from Watcher.site_monitoring.models import Site
 
     if isinstance(obj, Site):
         # Site attributes

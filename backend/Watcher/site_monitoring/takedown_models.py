@@ -2,7 +2,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from site_monitoring.models import Company
+from Watcher.site_monitoring.models import Company
 
 
 class TakedownCredit(models.Model):
@@ -214,7 +214,7 @@ class TakedownRequest(models.Model):
         
         # Update the related site's takedown status
         if self.site:
-            from site_monitoring.models import TakedownStatus
+            from Watcher.site_monitoring.models import TakedownStatus
             self.site.takedown_status = TakedownStatus.SUBMITTED
             self.site.takedown_submitted_at = timezone.now()
             self.site.save()
@@ -233,7 +233,7 @@ class TakedownRequest(models.Model):
         elif new_status == 'completed' and not self.completed_at:
             self.completed_at = now
             if self.site:
-                from site_monitoring.models import TakedownStatus
+                from Watcher.site_monitoring.models import TakedownStatus
                 self.site.takedown_status = TakedownStatus.TAKEN_DOWN
                 self.site.takedown_completed_at = now
                 self.site.save()
