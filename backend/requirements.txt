@@ -46,3 +46,5 @@ numpy==1.26.4
 
 # Gunicorn for production server
 gunicorn>=22
+
+pymysql==1.1.1
