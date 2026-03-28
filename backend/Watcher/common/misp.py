@@ -224,10 +224,9 @@ def create_or_update_objects(misp_api, event, site, dry_run=False):
                             )
                             misp_api.update_object(existing_obj)
                             logger.info(
-                                f"Updating MISP object for {
-                                    site.domain_name} - Added attribute {
-                                    attr.type}: {
-                                    attr.value}")
+                                f"Updating MISP object for {site.domain_name} - "
+                                f"Added attribute {attr.type}: {attr.value}"
+                            )
                         except Exception as e:
                             logger.error(f"Error adding attribute to object: {str(e)}")
                             raise
