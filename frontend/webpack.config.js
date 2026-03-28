@@ -1,11 +1,14 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   mode: 'production',
-  entry: './code/index.js', // <-- un seul point d'entrée
+  entry: './code/index.js',
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: '/static/frontend/'
   },
   module: {
     rules: [
@@ -13,10 +16,22 @@ module.exports = {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ['babel-loader']
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       }
     ]
   },
   resolve: {
     extensions: ['.js', '.jsx']
-  }
+  },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: './code/index.html',
+      filename: 'index.html',
+      inject: 'body'
+    })
+  ]
 };
