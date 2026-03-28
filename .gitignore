@@ -1,63 +1,23 @@
 ```
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
+# Dependencies
+node_modules/
+
+# Build artifacts
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-venv/
-ENV/
-env/
-.venv/
-env.bak/
-venv.bak/
+build/
+*.js.map
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Testing
-.coverage
-htmlcov/
-.tox/
-.nox/
-coverage.xml
-*.cover
-*.cache
-.pytest_cache/
-.hypothesis/
-
-# IDE
+# Editors
 .vscode/
 .idea/
+
+# Logs and temp files
+*.log
+*.tmp
 *.swp
-*.swo
-*~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment variables
+# Environment
 .env
 .env.local
-*.env
-.env.*
+*.env.*
 ```
