@@ -28,10 +28,8 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: './code/index.html',
-      filename: 'index.html',
-      inject: 'body'
-    })
+new HtmlWebpackPlugin({
+  template: path.resolve(__dirname, '/static/frontend/index.html')
+})
   ]
 };

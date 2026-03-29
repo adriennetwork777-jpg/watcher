@@ -46,6 +46,8 @@
     "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^2.4.2",
     "style-loader": "^4.0.0",
-    "tippy.js": "^6.3.7"
+    "tippy.js": "^6.3.7",
+    "html-webpack-plugin": "^5.6.6",
+    "clean-webpack-plugin":"^4.0.0"
   }
 }

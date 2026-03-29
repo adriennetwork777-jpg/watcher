@@ -1,9 +1,9 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app/code
-COPY package.json package-lock.json* ./
-RUN npm ci
 COPY . .
+RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM nginx:stable-alpine
