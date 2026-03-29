@@ -1162,12 +1162,7 @@ def generate_trendy_word_summary(trendy_word_id):
         )
 
         logger.info(
-            f"Summary {
-                'created' if created else 'updated'} for '{
-                trendy_word.name}' (id={
-                summary_obj.id}, {
-                    len(
-                        summary_text.split())} words)")
+            f"Summary {'created' if created else 'updated'} for '{trendy_word.name}' (id={summary_obj.id}, {len(summary_text.split())} words)")
         return summary_obj
 
     except Exception as e:

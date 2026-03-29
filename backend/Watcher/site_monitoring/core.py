@@ -211,8 +211,7 @@ def perform_site_rdap_lookup(site):
                 expiry_data={'old': site.domain_expiry, 'new': new_data['expiry']} if expiration_date else None
             )
             logger.info(
-                f"Successfully updated {method} data for {
-                    site.domain_name}: registrar='{registrar}', expiration='{expiration_date}'")
+                f"Successfully updated {method} data for {site.domain_name}: registrar='{registrar}', expiration='{expiration_date}'")
 
         # Update site data
         updated = False
@@ -632,13 +631,7 @@ def send_website_monitoring_notifications(site, alert_data):
         return
 
     ip_changes = f"New IP: {alert_data.get('new_ip', 'N/A')} | Old IP: {alert_data.get('old_ip', 'N/A')}"
-    ip_second_changes = f"New Second IP: {
-        alert_data.get(
-            'new_ip_second',
-            'N/A')} | Old Second IP: {
-        alert_data.get(
-            'old_ip_second',
-            'N/A')}"
+    ip_second_changes = f"New Second IP: {alert_data.get('new_ip_second', 'N/A')} | Old Second IP: {alert_data.get('old_ip_second', 'N/A')}"
     mx_changes = f"MX Records: {', '.join(alert_data.get('new_mx_records', []))}"
     content_score_info = f"TLSH Score: {alert_data.get('difference_score', 'N/A')}"
     alert_type_info = f"Alert Type: {alert_data.get('type', 'N/A')}"
