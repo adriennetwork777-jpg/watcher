@@ -1,47 +1,34 @@
-# =========================
 # Builder stage
-# =========================
 FROM python:3.11-slim-bookworm AS builder
 WORKDIR /app
 
-# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ default-libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies into user site
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Copy source code
 COPY ./Watcher ./Watcher
 COPY Watcher/manage.py .
 COPY nltk_dependencies.py .
 
-# =========================
 # Production stage
-# =========================
 FROM python:3.11-slim-bookworm
 
 WORKDIR /app/backend
 
-# Create user
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-libmysqlclient-dev curl \
+RUN apt-get update && apt-get install -y --no-install-recommends default-libmysqlclient-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python packages from builder
 COPY --from=builder /root/.local /home/appuser/.local
-
-# Copy source code
 COPY --from=builder /app/Watcher ./Watcher
 COPY --from=builder /app/manage.py .
 COPY --from=builder /app/nltk_dependencies.py .
 
-# Environment variables
 ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -49,7 +36,6 @@ ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONPATH=/app/backend \
     NLTK_DATA=/home/appuser/nltk_data
 
-# Create writable folders and set permissions
 RUN mkdir -p /app/backend/logs /home/appuser/nltk_data \
     && chown -R appuser:appgroup /app/backend /home/appuser/nltk_data \
     && chmod -R 755 /app/backend
@@ -59,12 +45,5 @@ USER appuser
 # Download NLTK dependencies
 RUN python nltk_dependencies.py
 
-# Gunicorn command: logs go into writable folder, worker temp in /tmp
-CMD ["gunicorn", "Watcher.wsgi:application",
-     "--chdir=/app/backend",
-     "-b", "0.0.0.0:9002",
-     "--workers=3",
-     "--threads=2",
-     "--worker-tmp-dir", "/tmp",
-     "--access-logfile", "/app/backend/logs/access.log",
-     "--error-logfile", "/app/backend/logs/error.log"]
+# Gunicorn command: logs go into writable folder
+CMD ["gunicorn", "Watcher.wsgi:application", "--chdir=/app/backend", "-b", "0.0.0.0:9002", "--workers=3", "--threads=2",  "--worker-tmp-dir", "/tmp", "--access-logfile", "/app/backend/logs/access.log", "--error-logfile", "/app/backend/logs/error.log"]

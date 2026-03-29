@@ -1176,7 +1176,7 @@ def update_legitimate_domains_rdap_data():
             # Save only if there are updates
             if updated_fields:
                 domain.save(update_fields=updated_fields)                 
-    logger.info(f"Successfully updated {domain.domain_name}: {', '.join(updated_fields)}")
+                #logger.info(f"Successfully updated {domain.domain_name}: {', '.join(updated_fields)}")
         except Exception as e:
             logger.error(f"Error processing {domain.domain_name}: {str(e)}")
 
