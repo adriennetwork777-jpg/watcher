@@ -22,8 +22,8 @@ class HealthViewSet(viewsets.ViewSet):
     """
     permission_classes = [permissions.AllowAny]
     
-    @action(detail=False, methods=['get'], url_path='health')
-    def health(self, request):
+    @action(detail=False, methods=['get'], url_name='health')
+    def list(self, request):
         """
         Health check endpoint.
         Returns the status of the application.
