@@ -1169,16 +1169,14 @@ def update_legitimate_domains_rdap_data():
                         old_registered_at = existing_registered_at
                         domain.domain_created_at = new_registered_at
                         updated_fields.append('domain_created_at')
-                        logger.info(
-                            f"{method} update for {domain.domain_name}: registration date changed from {old_registered_at} to {new_registered_at}")
+                        logger.info(f"{method} update for {domain.domain_name}: registration date changed from {old_registered_at} to {new_registered_at}")
             else:
                 logger.warning(f"No registration date available for {domain.domain_name}")
 
             # Save only if there are updates
             if updated_fields:
-                domain.save(update_fields=updated_fields)
-                logger.info(f"Successfully updated {domain.domain_name}: {', '.join(updated_fields)}")
-
+                domain.save(update_fields=updated_fields)                 
+    logger.info(f"Successfully updated {domain.domain_name}: {', '.join(updated_fields)}")
         except Exception as e:
             logger.error(f"Error processing {domain.domain_name}: {str(e)}")
 
