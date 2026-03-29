@@ -11,36 +11,46 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
-import ldap
-from django_auth_ldap.config import LDAPSearch
 from datetime import timedelta
 
-# LDAP Setup
+# LDAP Setup - only import if LDAP is configured
 AUTH_LDAP_SERVER_URI = os.environ.get('AUTH_LDAP_SERVER_URI', "")
 
-# TLS/SSL Certificate Verification
-AUTH_LDAP_VERIFY_SSL = os.environ.get('AUTH_LDAP_VERIFY_SSL', 'False')
-if AUTH_LDAP_VERIFY_SSL == 'False':
-    AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER}
-
-AUTH_LDAP_BIND_DN = os.environ.get('AUTH_LDAP_BIND_DN', "")
-AUTH_LDAP_BIND_PASSWORD = os.environ.get('AUTH_LDAP_BIND_PASSWORD', "")
-
-AUTH_LDAP_USER_SEARCH = LDAPSearch(os.environ.get('AUTH_LDAP_BASE_DN', ""),
-                                   ldap.SCOPE_SUBTREE,
-                                   os.environ.get('AUTH_LDAP_FILTER', "(uid=%(user)s)"))
-
-AUTH_LDAP_USER_ATTR_MAP = {
-    "first_name": "givenName",
-    "last_name": "sn",
-    "email": "mail"
-}
-
-AUTHENTICATION_BACKENDS = (
-    "django_auth_ldap.backend.LDAPBackend",
-    "django.contrib.auth.backends.ModelBackend",
-)
+if AUTH_LDAP_SERVER_URI:
+    import ldap
+    from django_auth_ldap.config import LDAPSearch
+    
+    # TLS/SSL Certificate Verification
+    AUTH_LDAP_VERIFY_SSL = os.environ.get('AUTH_LDAP_VERIFY_SSL', 'False')
+    if AUTH_LDAP_VERIFY_SSL == 'False':
+        AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER}
+    
+    AUTH_LDAP_BIND_DN = os.environ.get('AUTH_LDAP_BIND_DN', "")
+    AUTH_LDAP_BIND_PASSWORD = os.environ.get('AUTH_LDAP_BIND_PASSWORD', "")
+    
+    AUTH_LDAP_USER_SEARCH = LDAPSearch(os.environ.get('AUTH_LDAP_BASE_DN', ""),
+                                       ldap.SCOPE_SUBTREE,
+                                       os.environ.get('AUTH_LDAP_FILTER', "(uid=%(user)s)"))
+    
+    AUTH_LDAP_USER_ATTR_MAP = {
+        "first_name": "givenName",
+        "last_name": "sn",
+        "email": "mail"
+    }
+    
+    AUTHENTICATION_BACKENDS = (
+        "django_auth_ldap.backend.LDAPBackend",
+        "django.contrib.auth.backends.ModelBackend",
+    )
+else:
+    AUTH_LDAP_VERIFY_SSL = None
+    AUTH_LDAP_BIND_DN = None
+    AUTH_LDAP_BIND_PASSWORD = None
+    AUTH_LDAP_USER_SEARCH = None
+    AUTH_LDAP_USER_ATTR_MAP = None
+    AUTHENTICATION_BACKENDS = (
+        "django.contrib.auth.backends.ModelBackend",
+    )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
