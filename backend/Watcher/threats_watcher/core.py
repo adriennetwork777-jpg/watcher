@@ -443,8 +443,7 @@ def focus_on_top(words_occurrence):
 
                                         if not recent_breaking:
                                             logger.info(
-                                                f"Breaking news threshold reached for '{word}' ({
-                                                    trendy_word.occurrences} occurrences)")
+                                                f"Breaking news threshold reached for '{word}' ({trendy_word.occurrences} occurrences)")
                                             generate_breaking_news(trendy_word)
                 except KeyError:
                     pass
