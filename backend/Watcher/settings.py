@@ -226,7 +226,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'watcher.urls'
+ROOT_URLCONF = 'Watcher.urls'
 
 TEMPLATES = [
     {
@@ -244,7 +244,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'watcher.wsgi.application'
+WSGI_APPLICATION = 'Watcher.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -375,32 +375,32 @@ LOGGING = {
         },
     },
     "loggers": {
-        'watcher.common': {
+        'Watcher.common': {
             'handlers': ['file_common', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },
-        'watcher.threats_watcher': {
+        'Watcher.threats_watcher': {
             'handlers': ['file_threats_watcher', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },
-        'watcher.data_leak': {
+        'Watcher.data_leak': {
             'handlers': ['file_data_leak', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },
-        'watcher.dns_finder': {
+        'Watcher.dns_finder': {
             'handlers': ['file_dns_finder', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },
-        'watcher.site_monitoring': {
+        'Watcher.site_monitoring': {
             'handlers': ['file_site_monitoring', 'console'],
             'level': TRACE_LEVEL,
             'propagate': False,
         },
-        'watcher': {
+        'Watcher': {
             'handlers': ['file_common'],
             'level': TRACE_LEVEL,
             'propagate': False,
