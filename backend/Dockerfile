@@ -45,5 +45,10 @@ USER appuser
 # Download NLTK dependencies
 RUN python nltk_dependencies.py
 
+# Create writable directory for gunicorn control socket
+RUN mkdir -p /tmp/gunicorn && chown appuser:appgroup /tmp/gunicorn
+
+ENV GUNICORN_CMD_ARGS="--chdir=/app/backend --worker-tmp-dir /tmp --access-logfile /app/backend/logs/access.log --error-logfile /app/backend/logs/error.log"
+
 # Gunicorn command: logs go into writable folder
-CMD ["gunicorn", "Watcher.wsgi:application", "--chdir=/app/backend", "-b", "0.0.0.0:9002", "--workers=3", "--threads=2",  "--worker-tmp-dir", "/tmp", "--access-logfile", "/app/backend/logs/access.log", "--error-logfile", "/app/backend/logs/error.log"]
+CMD ["gunicorn", "Watcher.wsgi:application", "-b", "0.0.0.0:9002", "--workers=3", "--threads=2"]
