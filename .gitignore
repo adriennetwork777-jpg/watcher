@@ -6,10 +6,21 @@ venv/
 __pycache__/
 .mypy_cache/
 .pytest_cache/
-dist/
-build/
 target/
 .gradle/
+
+# Build artifacts
+dist/
+build/
+*.pyc
+*.class
+*.o
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
 
 # Logs and temp files
 *.log
@@ -26,18 +37,7 @@ target/
 .vscode/
 .idea/
 
-# Compiled files
-*.pyc
-*.class
-*.o
-*.exe
-*.dll
-*.so
-*.a
-*.obj
-*.out
-
-# System files
+# System
 .DS_Store
 Thumbs.db
 
@@ -65,8 +65,4 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 ```
