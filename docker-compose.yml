@@ -167,6 +167,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+      - /run
     expose:
       - "9002"
     env_file:
